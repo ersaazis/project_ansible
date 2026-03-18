@@ -1,0 +1,45 @@
+---
+# tasks file for openinfraquote
+- name: Ensure download directory exists
+  ansible.builtin.file:
+    path: /tmp/oiq_download
+    state: directory
+    mode: '0755'
+
+- name: Get latest OpenInfraQuote version
+  ansible.builtin.get_url:
+    url: https://api.github.com/repos/terrateam-io/openinfraquote/releases/latest
+    dest: /tmp/oiq_download/release.json
+  register: oiq_release_check
+
+- name: Set download URL (hardcoded for linux-amd64 for now, can be parameterized)
+  ansible.builtin.set_fact:
+    oiq_download_url: "https://github.com/terrateam-io/openinfraquote/releases/latest/download/oiq-linux-amd64.tar.gz"
+
+- name: Download OpenInfraQuote binary
+  ansible.builtin.get_url:
+    url: "{{ oiq_download_url }}"
+    dest: /tmp/oiq_download/oiq.tar.gz
+    mode: '0644'
+
+- name: Unarchive OpenInfraQuote binary
+  ansible.builtin.unarchive:
+    src: /tmp/oiq_download/oiq.tar.gz
+    dest: /usr/local/bin/
+    remote_src: yes
+    mode: '0755'
+
+- name: Download latest pricing sheet
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/terrateam-io/openinfraquote/main/prices.csv
+    dest: /usr/local/bin/prices.csv
+    mode: '0644'
+
+- name: Verify oiq installation
+  ansible.builtin.command: oiq --help
+  register: oiq_verify
+  changed_when: false
+
+- name: Display oiq verification output
+  ansible.builtin.debug:
+    var: oiq_verify.stdout_lines

@@ -1,0 +1,30 @@
+---
+- name: Set vm.max_map_count for SonarQube
+  sysctl:
+    name: vm.max_map_count
+    value: '262144'
+    state: present
+    reload: yes
+
+- name: Create directory for SonarQube docker-compose
+  file:
+    path: /opt/sonarqube
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Copy SonarQube docker-compose.yml
+  copy:
+    src: docker-compose.yml
+    dest: /opt/sonarqube/docker-compose.yml
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Start SonarQube using Docker Compose
+  command: docker compose up -d
+  args:
+    chdir: /opt/sonarqube
+  register: compose_out
+  changed_when: "'Created' in compose_out.stdout or 'Started' in compose_out.stdout"

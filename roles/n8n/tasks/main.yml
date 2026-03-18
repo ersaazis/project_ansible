@@ -1,0 +1,45 @@
+---
+- name: Ensure /opt/n8n directory exists
+  file:
+    path: /opt/n8n
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+    mode: '0755'
+
+- name: Create local-files directory for n8n volumes
+  file:
+    path: /opt/n8n/local-files
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+    mode: '0755'
+
+- name: Create basic .env.n8n file if it doesn't exist
+  copy:
+    dest: /opt/n8n/.env.n8n
+    content: |
+      # N8N Basic Environment Variables
+      # WEBHOOK_URL=https://n8n.yourdomain.com/
+      # N8N_BASIC_AUTH_ACTIVE=true
+      # N8N_BASIC_AUTH_USER=admin
+      # N8N_BASIC_AUTH_PASSWORD=password
+    force: no
+    owner: ubuntu
+    group: ubuntu
+    mode: '0600'
+
+- name: Copy n8n docker-compose.yml
+  copy:
+    src: docker-compose.yml
+    dest: /opt/n8n/docker-compose.yml
+    owner: ubuntu
+    group: ubuntu
+    mode: '0644'
+
+- name: Start n8n using Docker Compose
+  command: docker compose up -d
+  args:
+    chdir: /opt/n8n
+  register: compose_n8n
+  changed_when: "'Created' in compose_n8n.stdout or 'Started' in compose_n8n.stdout"

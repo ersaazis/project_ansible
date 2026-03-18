@@ -1,0 +1,60 @@
+// ==========================================================
+// Integrasi OTel Collector
+// ==========================================================
+otelcol.receiver.otlp "default" {
+  grpc {
+    endpoint = "0.0.0.0:4317"
+  }
+  http {
+    endpoint = "0.0.0.0:4318"
+  }
+  output {
+    metrics = [
+      otelcol.processor.batch.metrics.input,
+    ]
+    logs = [
+      otelcol.processor.batch.logs.input,
+    ]
+    traces = [
+      otelcol.processor.batch.traces.input,
+    ]
+  }
+}
+
+// Batch processing logs
+otelcol.processor.batch "logs" {
+  output {
+    logs = [
+      otelcol.exporter.loki.loki.input,
+    ]
+  }
+}
+
+// Batch processing metrics
+otelcol.processor.batch "metrics" {
+  output {
+    metrics = [
+      otelcol.exporter.prometheus.mimir.input,
+    ]
+  }
+}
+
+// Batch processing traces
+otelcol.processor.batch "traces" {
+  output {
+    traces = [
+      otelcol.exporter.otlphttp.tempo.input,
+    ]
+  }
+}
+
+// Exporter untuk logs.
+otelcol.exporter.loki "loki" {
+  forward_to = [loki.write.loki.receiver]
+}
+
+// Exporter untuk metrics.
+// (Menggunakan prometheus format karena Mimir menerima lewat /api/v1/push)
+otelcol.exporter.prometheus "mimir" {
+  forward_to = [prometheus.remote_write.mimir.receiver]
+}

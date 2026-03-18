@@ -1,0 +1,15 @@
+# Ignore actual environment files
+.env.semaphore
+.env.db
+.env.provisioner
+
+# Do not ignore templates
+!.env.semaphore.example
+!.env.db.example
+!.env.provisioner.example
+
+# Common ignores
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store

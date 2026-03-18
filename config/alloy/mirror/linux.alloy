@@ -1,0 +1,113 @@
+// ==========================================================
+// METRICS
+// ==========================================================
+
+// ----------------------------------------------------------
+// NODE + SYSTEMD
+// ----------------------------------------------------------
+
+prometheus.exporter.unix "integrations_node_exporter" {
+  disable_collectors = ["ipvs", "btrfs", "infiniband", "xfs", "zfs"]
+  enable_collectors  = ["meminfo", "systemd"]
+
+  filesystem {
+    fs_types_exclude     = "^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|tmpfs|fusectl|hugetlbfs|iso9660|mqueue|nsfs|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs)$"
+    mount_points_exclude = "^/(dev|proc|run/credentials/.+|sys|var/lib/docker/.+)($|/)"
+    mount_timeout        = "5s"
+  }
+
+  netclass {
+    ignored_devices = "^(veth.*|cali.*|[a-f0-9]{15})$"
+  }
+
+  netdev {
+    device_exclude = "^(veth.*|cali.*|[a-f0-9]{15})$"
+  }
+}
+
+discovery.relabel "integrations_node_exporter" {
+  targets = prometheus.exporter.unix.integrations_node_exporter.targets
+
+  rule {
+    target_label = "instance"
+    replacement  = constants.hostname
+  }
+
+  rule {
+    target_label = "env"
+    replacement  = "mirror"
+  }
+
+  rule {
+    target_label = "job"
+    replacement  = "integrations/node_exporter"
+  }
+}
+
+prometheus.scrape "integrations_node_exporter" {
+  scrape_interval = "15s"
+  targets         = discovery.relabel.integrations_node_exporter.output
+  forward_to      = [prometheus.remote_write.mimir.receiver]
+}
+
+// ==========================================================
+// LOGS
+// ==========================================================
+
+// ----------------------------------------------------------
+// JOURNAL LOGS
+// ----------------------------------------------------------
+
+discovery.relabel "logs_journal" {
+  targets = []
+
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    target_label  = "unit"
+  }
+
+  rule {
+    source_labels = ["__journal_priority_keyword"]
+    target_label  = "level"
+  }
+
+  rule {
+    target_label = "instance"
+    replacement  = constants.hostname
+  }
+
+  rule {
+    target_label = "env"
+    replacement  = "mirror"
+  }
+
+  rule {
+    target_label = "job"
+    replacement  = "integrations/journal"
+  }
+}
+
+loki.source.journal "logs_journal" {
+  max_age       = "24h"
+  relabel_rules = discovery.relabel.logs_journal.rules
+  forward_to    = [loki.write.loki.receiver]
+}
+
+// ----------------------------------------------------------
+// FILE LOGS
+// ----------------------------------------------------------
+
+local.file_match "logs_file" {
+  path_targets = [{
+    __address__ = "localhost",
+    __path__    = "/var/log/{syslog,messages,*.log}",
+    instance    = constants.hostname,
+    env         = "mirror",
+    job         = "integrations/file",
+  }]
+}
+
+loki.source.file "logs_file" {
+  targets    = local.file_match.logs_file.targets
+  forward_to = [loki.write.loki.receiver]
+}
