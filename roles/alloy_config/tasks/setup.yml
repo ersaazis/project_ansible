@@ -2,6 +2,7 @@
   file:
     path: /etc/systemd/system/alloy.service.d
     state: directory
+  when: enable_monitoring | default(false)
 
 - name: Create systemd override to run as root and set env vars
   copy:
@@ -18,6 +19,7 @@
   notify:
     - reload systemd
     - restart alloy
+  when: enable_monitoring | default(false)
 
 - name: Configure Alloy
   template:

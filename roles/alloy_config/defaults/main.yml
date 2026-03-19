@@ -1,0 +1,11 @@
+# Default values for alloy_config role
+enable_monitoring: false
+
+# Centralized Endpoints (Default/Placeholder)
+MIMIR_URL: "http://localhost/mimir/api/v1/push"
+LOKI_URL: "http://localhost/loki/api/v1/push"
+TEMPO_URL: "http://localhost/tempo"
+
+# Authentication (Default/Placeholder)
+ALLOY_DATASOURCE_USER: "admin"
+ALLOY_DATASOURCE_PASSWORD: "admin"

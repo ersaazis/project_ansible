@@ -64,7 +64,7 @@ def wait_for_semaphore():
             time.sleep(2)
     return False
 
-def create_task_template(project_id, name, playbook, inventory_id, repo_id, env_id, key_id, vault_key_id, headers):
+def create_task_template(project_id, name, playbook, inventory_id, repo_id, env_id, key_id, vault_key_id, tag, headers):
     """Creates or updates a Task Template and returns its ID."""
     templates = api_call(f"/project/{project_id}/templates", headers=headers) or []
     template = next((t for t in templates if t["name"] == name), None)
@@ -88,7 +88,8 @@ def create_task_template(project_id, name, playbook, inventory_id, repo_id, env_
         "arguments": "[]",
         "allow_override_args_in_task": True,
         "description": f"Automated template for {playbook}",
-        "vaults": [{"name": None, "vault_key_id": vault_key_id, "type": "password", "script": None}] if vault_key_id else []
+        "task_params": {"allow_debug": True, "tags": [tag]},
+        "vaults": [{"project_id": project_id, "vault_key_id": vault_key_id, "type": "password"}] if vault_key_id else []
     }
 
     if not template:
@@ -98,6 +99,8 @@ def create_task_template(project_id, name, playbook, inventory_id, repo_id, env_
     else:
         print(f"Updating Task Template: {name}")
         data["id"] = template["id"]
+        if vault_key_id:
+            data["vaults"][0]["template_id"] = template["id"]
         api_call(f"/project/{project_id}/templates/{template['id']}", method="PUT", data=data, headers=headers)
         return template["id"]
 
@@ -305,6 +308,7 @@ def main():
                 template_name = f"[{env_title}] {cat_label} - {pb_title}"
                 playbook_rel_path = f"playbooks/{cat_dir}/{pb_name}"
                 
+                tag = cat_dir if cat_dir != "other" else "backup"
                 template_id = create_task_template(
                     project_id=project_id,
                     name=template_name,
@@ -314,6 +318,7 @@ def main():
                     env_id=env_id,
                     key_id=key_id,
                     vault_key_id=vault_key_id,
+                    tag=tag,
                     headers=headers
                 )
 

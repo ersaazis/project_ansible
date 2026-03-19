@@ -4,3 +4,4 @@ timezone: "Asia/Jakarta"
 MIMIR_URL: "http://host.docker.internal/mimir/api/v1/push"
 LOKI_URL: "http://host.docker.internal/loki/api/v1/push"
 TEMPO_URL: "http://host.docker.internal/tempo"
+enable_monitoring: true

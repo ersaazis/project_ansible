@@ -5,7 +5,8 @@
 
 {# Define fragment path based on inventory directory #}
 {% set env = inventory_dir | basename %}
-{% set fragment_dir = playbook_dir ~ '/config/alloy/' ~ env %}
+{% set project_root = playbook_dir | dirname | dirname %}
+{% set fragment_dir = project_root ~ '/config/alloy/' ~ env %}
 
 // --- 0_endpoint.alloy ---
 {{ lookup('file', fragment_dir ~ '/0_endpoint.alloy') }}
