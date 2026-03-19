@@ -22,28 +22,37 @@ This file documents key architectural decisions, rules, and user preferences for
 ## Project Architecture & Playbook Structure
 - **Environment Separation**: Four distinct environments (`development`, `staging`, `mirror`, `production`).
 - **Playbook Organization** (within `playbooks/` directory):
-    - `setup/`: Initial installation and configuration (e.g., `setup-docker.yml`).
-    - `restart/`: Service restarts (e.g., `restart-mysql.yml`).
-    - `configure/`: Configuration updates and tuning (e.g., `config-postgres.yml`).
+    - `setup/`: Initial installation and core configuration (e.g., `setup-docker.yml`).
+    - `service/`: Service lifecycle management (e.g., `service-mysql.yml`).
+    - `configure/`: Fine-tuning and post-install configuration (e.g., `config-postgres.yml`).
     - `other/`: Auxiliary operations, primarily `Backup` (e.g., `backup-mysql.yml`).
     - `build/`: Reserved for CI/CD build tasks.
     - `deploy/`: Reserved for application deployment tasks.
-- **Explicit Naming**: All playbooks within subdirectories MUST follow the `<category>-<service>.yml` naming convention to ensure clarity and avoid ambiguity.
+- **Explicit Naming**: All playbooks within subdirectories MUST follow the `<category>-<service>.yml` naming convention (e.g., `service-nginx.yml` instead of `restart-nginx.yml`).
 - **Semaphore Automation**: The `./provision/provision-semaphore.py` script automatically manages Semaphore configuration:
     - Scans `playbooks/` subdirectories to create corresponding Views and Task Templates.
+    - **Service Category**: Task Templates in the `service` category default to the `start` tag (`--tags start`).
+    - **Tag Documentation**: Service template descriptions explicitly list supported tags (`start`, `stop`, `restart`, `reload`).
     - Automatically cleans up orphaned Task Templates when local playbooks are removed.
     - Configures automated schedules for `Backup` playbooks in the `other/` category.
 - **Role Structure Conventions**:
-    - **Modular Roles**: For complex services (e.g., databases), functionality is split into separate roles: `_install`, `_config`, `_service`, and `_backup`.
-    - **Simple Roles**: Kept as a single role (e.g., `openinfraquote`).
+    - **Modular Roles**: Complex services are split into single-responsibility roles: `_install`, `_config`, `_service`, and `_backup`.
+    - **Service Actions**: ALL `_service` roles MUST support standard tags: `start`, `stop`, `restart`, and `reload`.
+    - **Default Start**: `_service` roles implement logic (`when: ansible_run_tags | length == 0 or 'start' in ansible_run_tags`) to ensure the `start` task runs by default if no tags are specified.
 - **Alloy Configuration**:
-    - Modularized into `alloy_setup` and `alloy_config`.
-    - Config fragments stored in `ansible/config/alloy/<env>/`.
-    - Alloy runs as **root** via systemd override for full system visibility.
-    - Uses `Environment=` in systemd override to supply variables for `sys.env()` in fragments.
-- **Database Logic**:
-    - Variable `database_server` defines the type (`mysql` or `postgres`).
-    - Used in Alloy templates to include the correct monitoring fragment.
+    - Modularized into `alloy_install`, `alloy_config`, and `alloy_service`.
+    - Config fragments stored in `ansible/roles/alloy_config/templates/fragment/<env>/`.
+    - **Dynamic Resolution**: Fragments are included based on environment name (`inventory_dir | basename`).
+    - Alloy runs as **root** via systemd override for full system visibility (e.g., Docker socket, system logs).
+    - Uses `EnvironmentFile=` in systemd override to supply variables for `sys.env()` in fragments.
+- **Global Configuration**:
+    - A global `ansible.cfg` in the project root defines `roles_path = ./roles` to ensure correct role discovery by Semaphore when running playbooks from subdirectories.
+
+## Host Variables Reference
+- `enable_monitoring`: boolean (all hosts).
+- `enable_backup`: boolean (DB hosts).
+- `database_server`: 'mysql' or 'postgres'.
+- `database_server` is also used in `alloy_config` to dynamically include DB monitoring fragments.
 
 ## Host Variables Reference
 - `enable_monitoring`: boolean (all hosts).

@@ -1,0 +1,6 @@
+- name: Setup Nginx
+  hosts: app_servers
+  become: yes
+  roles:
+    - role: nginx_install
+    - role: nginx_service

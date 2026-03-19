@@ -11,14 +11,13 @@ This repository contains the Ansible playbooks and inventory for managing the Ho
     - `vars.yml`: General (non-sensitive) host variables.
     - `vault.yml`: Sensitive host variables (SSH user, passwords, DB root passwords). **Encrypt these with `ansible-vault`!**
 - `roles/`: Modular Ansible roles:
-    - `docker`: Official Docker Engine installation.
-    - `mysql_*` & `postgres_*`: Modular database roles (install, config, service, backup).
-    - `alloy_setup` & `alloy_config`: Modular Grafana Alloy installation and dynamic configuration.
-    - `terraform` & `ansible_install`: Tools for the control node.
-    - `openinfraquote`: Application repository and deployment logic.
+    - `*_install`: Role for package/binary installation.
+    - `*_service`: Role for service lifecycle management (start, stop, restart, reload).
+    - `*_config`: Role for configuration and templating.
+    - `*_backup`: Role for database backup logic (MySQL/Postgres).
 - `playbooks/`: Organized logic divided into explicit execution categories.
     - `setup/`: Initial provisioning and configuration (e.g., `setup-docker.yml`).
-    - `restart/`: Service restarts and management (e.g., `restart-mysql.yml`).
+    - `service/`: Service management using tags (e.g., `service-mysql.yml`).
     - `configure/`: Configuration tuning (e.g., `config-postgres.yml`).
     - `other/`: Auxiliary operations like Database Backups (e.g., `backup-mysql.yml`).
 - `provision/`: Contains `provision-semaphore.py` for automated Semaphore UI configuration.
