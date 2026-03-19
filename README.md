@@ -51,8 +51,3 @@ To simplify secret management, use the `./vault-encrypt.sh` script:
 - **Timezone**: Set to `Asia/Jakarta` globally in `group_vars/all.yml`.
 - **Monitoring**: Controlled by `enable_monitoring` flag in `host_vars`.
 - **Backup**: Controlled by `enable_backup` flag in `host_vars`. Triggered via `playbooks/other/` calling respective backup tags.
-
-## AI Assistant Guidelines
-
-> **🚨 CRITICAL INSTRUCTION FOR AI ASSISTANTS 🚨**
-> If the user asks you to "update context", "pelajari project ini", or requests an update to the project's documentation/rules, you **MUST** use the `mcp:sequential-thinking` (Sequential Thinking) tool to meticulously study the project's directory structure, roles, playbooks, variables, and scripts from scratch. Do this to capture the latest architecture, flow, and pattern changes, and then update both `GEMINI.md` and `README.md` to reflect the new state accurately.
