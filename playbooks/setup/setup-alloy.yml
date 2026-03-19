@@ -1,0 +1,6 @@
+- name: Setup Alloy
+  hosts: all
+  become: yes
+  roles:
+    - role: alloy_setup
+    - role: alloy_config

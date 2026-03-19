@@ -1,0 +1,118 @@
+// ==========================================================
+// Integrasi OTel Collector
+// ==========================================================
+otelcol.receiver.otlp "default" {
+  grpc {
+    endpoint = "0.0.0.0:4317"
+  }
+  http {
+    endpoint = "0.0.0.0:4318"
+  }
+  output {
+    metrics = [
+      otelcol.processor.batch.metrics.input,
+    ]
+    logs = [
+      otelcol.processor.batch.logs.input,
+    ]
+    traces = [
+      otelcol.processor.attributes.add_labels.input,
+    ]
+  }
+}
+
+// Menambahkan attribute env pada traces OTel
+otelcol.processor.attributes "add_labels" {
+  action {
+    key    = "env"
+    value  = "staging"
+    action = "insert"
+  }
+
+  output {
+    traces = [
+      otelcol.processor.batch.traces.input,
+      otelcol.connector.spanmetrics.service_graph.input,
+      otelcol.connector.servicegraph.service_graph.input,
+    ]
+  }
+}
+
+// Connector untuk Service Graph
+otelcol.connector.servicegraph "service_graph" {
+  dimensions = ["env"]
+  output {
+    metrics = [otelcol.processor.batch.metrics.input]
+  }
+}
+
+// Connector untuk Span Metrics (RED Metrics)
+otelcol.connector.spanmetrics "service_graph" {
+  histogram {
+    explicit {}
+  }
+  dimension {
+    name = "env"
+  }
+  output {
+    metrics = [otelcol.processor.batch.metrics.input]
+  }
+}
+
+// Batch processing logs
+otelcol.processor.batch "logs" {
+  output {
+    logs = [
+      otelcol.exporter.loki.loki.input,
+    ]
+  }
+}
+
+// Batch processing metrics
+otelcol.processor.batch "metrics" {
+  output {
+    metrics = [
+      otelcol.exporter.prometheus.mimir.input,
+    ]
+  }
+}
+
+// Batch processing traces
+otelcol.processor.batch "traces" {
+  output {
+    traces = [
+      otelcol.exporter.otlphttp.tempo.input,
+    ]
+  }
+}
+
+// Menambahkan label pada log OTel
+loki.relabel "add_labels" {
+  forward_to = [loki.write.loki.receiver]
+
+  rule {
+    target_label = "env"
+    replacement  = "staging"
+  }
+}
+
+// Exporter untuk logs.
+otelcol.exporter.loki "loki" {
+  forward_to = [loki.relabel.add_labels.receiver]
+}
+
+// Menambahkan label pada metrics OTel
+prometheus.relabel "metrics_add_labels" {
+  forward_to = [prometheus.remote_write.mimir.receiver]
+
+  rule {
+    target_label = "env"
+    replacement  = "staging"
+  }
+}
+
+// Exporter untuk metrics.
+// (Menggunakan prometheus format karena Mimir menerima lewat /api/v1/push)
+otelcol.exporter.prometheus "mimir" {
+  forward_to = [prometheus.relabel.metrics_add_labels.receiver]
+}

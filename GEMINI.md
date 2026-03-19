@@ -22,12 +22,20 @@ This file documents key architectural decisions, rules, and user preferences for
 ## Project Architecture & Playbook Structure
 - **Environment Separation**: Four distinct environments (`development`, `staging`, `mirror`, `production`).
 - **Playbook Organization** (within `playbooks/` directory):
-    - `setup/`: Playbooks for initial installation and configuration of services.
-    - `restart/`: Playbooks specifically to restart services (e.g., after config updates or via Semaphore).
-    - `other/`: Playbooks for auxiliary operations like `Backup`. Playbooks here should have descriptive task names (e.g., `- name: Backup MySQL`) and call specific role tags (`tags: [backup]`).
+    - `setup/`: Initial installation and configuration (e.g., `setup-docker.yml`).
+    - `restart/`: Service restarts (e.g., `restart-mysql.yml`).
+    - `configure/`: Configuration updates and tuning (e.g., `config-postgres.yml`).
+    - `other/`: Auxiliary operations, primarily `Backup` (e.g., `backup-mysql.yml`).
+    - `build/`: Reserved for CI/CD build tasks.
+    - `deploy/`: Reserved for application deployment tasks.
+- **Explicit Naming**: All playbooks within subdirectories MUST follow the `<category>-<service>.yml` naming convention to ensure clarity and avoid ambiguity.
+- **Semaphore Automation**: The `./provision/provision-semaphore.py` script automatically manages Semaphore configuration:
+    - Scans `playbooks/` subdirectories to create corresponding Views and Task Templates.
+    - Automatically cleans up orphaned Task Templates when local playbooks are removed.
+    - Configures automated schedules for `Backup` playbooks in the `other/` category.
 - **Role Structure Conventions**:
-    - **Complex Roles** (e.g., databases, docker, alloy): Must separate tasks into `setup.yml`, `restart.yml`, `main.yml` (includes both), and optionally `backup.yml`. No scheduling logic should reside in roles.
-    - **Simple Roles** (e.g., `openinfraquote`): Kept minimal, often just a single `main.yml`.
+    - **Modular Roles**: For complex services (e.g., databases), functionality is split into separate roles: `_install`, `_config`, `_service`, and `_backup`.
+    - **Simple Roles**: Kept as a single role (e.g., `openinfraquote`).
 - **Alloy Configuration**:
     - Modularized into `alloy_setup` and `alloy_config`.
     - Config fragments stored in `ansible/config/alloy/<env>/`.

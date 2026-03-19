@@ -1,0 +1,91 @@
+// ==========================================================
+// MATRICS
+// ==========================================================
+
+// Docker.
+prometheus.exporter.cadvisor "docker" {
+	docker_host            = "unix:///var/run/docker.sock"
+	store_container_labels = true
+	docker_only            = true
+	storage_duration       = "5m"
+}
+
+discovery.relabel "docker" {
+	targets = prometheus.exporter.cadvisor.docker.targets
+
+	rule {
+		target_label = "job"
+		replacement  = "integrations/docker"
+	}
+
+	rule {
+		target_label = "instance"
+		replacement  = constants.hostname
+	}
+
+	rule {
+		target_label = "env"
+		replacement  = "mirror"
+	}
+}
+
+prometheus.scrape "scraper" {
+	targets         = discovery.relabel.docker.output
+	forward_to      = [prometheus.remote_write.mimir.receiver]
+	scrape_interval = "10s"
+}
+
+// ==========================================================
+// LOGS
+// ==========================================================
+
+// Docker
+discovery.docker "linux" {
+	host = "unix:///var/run/docker.sock"
+}
+
+discovery.relabel "logs_integrations_docker" {
+	targets = []
+
+	rule {
+		source_labels = ["__meta_docker_container_name"]
+		target_label  = "container"
+	}
+
+	rule {
+		source_labels = ["__meta_docker_container_label_com_docker_compose_project"]
+		target_label  = "project"
+	}
+
+	rule {
+		source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+		target_label  = "service"
+	}
+
+	rule {
+		source_labels = ["__meta_docker_container_label_com_docker_compose_project_config_files"]
+		target_label  = "config_file"
+	}
+
+	rule {
+		target_label = "instance"
+		replacement  = constants.hostname
+	}
+
+	rule {
+		target_label = "env"
+		replacement  = "mirror"
+	}
+
+	rule {
+		target_label = "job"
+		replacement  = "integrations/docker"
+	}
+}
+
+loki.source.docker "default" {
+	host          = "unix:///var/run/docker.sock"
+	targets       = discovery.docker.linux.targets
+	relabel_rules = discovery.relabel.logs_integrations_docker.rules
+	forward_to    = [loki.write.loki.receiver]
+}

@@ -1,0 +1,5 @@
+- name: Restart Alloy
+  hosts: all
+  become: yes
+  roles:
+    - role: alloy_config

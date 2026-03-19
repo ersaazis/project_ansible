@@ -1,0 +1,13 @@
+- name: Install MySQL Server and PyMySQL
+  apt:
+    name: 
+      - mysql-server
+      - python3-pymysql
+    state: present
+    update_cache: yes
+
+- name: Start and enable MySQL service
+  systemd:
+    name: mysql
+    state: started
+    enabled: yes

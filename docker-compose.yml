@@ -32,11 +32,11 @@ services:
       - .env.semaphore
       - .env.vault
     volumes:
-      - ./scripts:/scripts:ro
+      - ./provision:/provision:ro
       - .:/home/semaphore/ansible:ro
     depends_on:
       - semaphore
-    command: python /scripts/provision-semaphore.py
+    command: python /provision/provision-semaphore.py
 
 volumes:
   semaphore_data:

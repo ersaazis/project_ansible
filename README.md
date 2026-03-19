@@ -12,23 +12,27 @@ This repository contains the Ansible playbooks and inventory for managing the Ho
     - `vault.yml`: Sensitive host variables (SSH user, passwords, DB root passwords). **Encrypt these with `ansible-vault`!**
 - `roles/`: Modular Ansible roles:
     - `docker`: Official Docker Engine installation.
-    - `mysql` & `postgres`: Database setup with environment-specific passwords and built-in backup tasks.
+    - `mysql_*` & `postgres_*`: Modular database roles (install, config, service, backup).
     - `alloy_setup` & `alloy_config`: Modular Grafana Alloy installation and dynamic configuration.
     - `terraform` & `ansible_install`: Tools for the control node.
     - `openinfraquote`: Application repository and deployment logic.
 - `playbooks/`: Organized logic divided into explicit execution categories.
-    - `setup/`: Initial provisioning and configuration.
-    - `restart/`: Restarts services cleanly.
-    - `other/`: Specific operations like Database Backups (e.g., `mysql.yml`, `postgres.yml`).
-- `site.yml`: Master playbook that orchestrates the entire deployment.
+    - `setup/`: Initial provisioning and configuration (e.g., `setup-docker.yml`).
+    - `restart/`: Service restarts and management (e.g., `restart-mysql.yml`).
+    - `configure/`: Configuration tuning (e.g., `config-postgres.yml`).
+    - `other/`: Auxiliary operations like Database Backups (e.g., `backup-mysql.yml`).
+- `provision/`: Contains `provision-semaphore.py` for automated Semaphore UI configuration.
 
-## Deployment
+## Automated Provisioning
 
-To deploy the entire stack:
+This project uses a custom Python script to synchronize playbooks with [Ansible Semaphore](https://ansible-semaphore.com/):
+
 ```bash
-ansible-playbook -i inventories/staging/hosts.yml site.yml
+# Script is automatically run by the 'provisioner' container in docker-compose.yml
+docker compose restart provisioner
 ```
 
+The script manages views, task templates, and schedules based on the `playbooks/` subdirectory structure.
 ## Automated Vault Encryption
 
 To simplify secret management, use the `./vault-encrypt.sh` script:
