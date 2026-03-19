@@ -6,6 +6,4 @@
       when: database_server | default('') == 'mysql'
     - role: mysql_config
       when: database_server | default('') == 'mysql'
-  vars:
-    database_server: mysql
 

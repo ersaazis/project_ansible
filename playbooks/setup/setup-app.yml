@@ -2,6 +2,6 @@
   hosts: control_nodes
   become: yes
   roles:
-    - role: terraform
+    - role: terraform_install
     - role: ansible_install
-    - role: openinfraquote
+    - role: openinfraquote_install

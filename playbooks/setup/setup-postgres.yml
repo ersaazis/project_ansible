@@ -6,6 +6,4 @@
       when: database_server | default('') == 'postgres'
     - role: postgres_config
       when: database_server | default('') == 'postgres'
-  vars:
-    database_server: postgres
 

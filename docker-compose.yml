@@ -25,6 +25,7 @@ services:
     restart: unless-stopped
     volumes:
       - semaphore_db:/var/lib/postgresql/data
+
   provisioner:
     image: python:3-alpine
     container_name: semaphore-provisioner

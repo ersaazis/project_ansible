@@ -1,9 +1,0 @@
-- name: Include setup tasks
-  include_tasks: setup.yml
-  tags: [setup]
-  when: "'setup' in ansible_run_tags"
-
-- name: Include restart tasks
-  include_tasks: restart.yml
-  tags: [restart]
-  when: "'restart' in ansible_run_tags"

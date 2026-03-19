@@ -13,7 +13,7 @@ Semaphore Provisioning Script
 This script automates the initial setup of Ansible Semaphore.
 It scans the 'playbooks' directory to create Task Templates for:
 1. Setup
-2. Restart
+2. Service
 3. Schedule (with cron)
 """
 
@@ -27,7 +27,7 @@ DEFAULT_SCHEDULES = {
     "backup-postgres.yml": "0 3 * * *", # Daily at 3 AM
 }
 
-VIEWS = ["setup", "restart", "configure", "other", "build", "deploy"]
+VIEWS = ["setup", "service", "configure", "other", "build", "deploy"]
 
 def api_call(path, method="GET", data=None, headers=None):
     if headers is None:
@@ -66,7 +66,7 @@ def wait_for_semaphore():
             time.sleep(2)
     return False
 
-def create_task_template(project_id, name, playbook, inventory_id, repo_id, env_id, key_id, vault_key_id, view_id, headers):
+def create_task_template(project_id, name, playbook, inventory_id, repo_id, env_id, key_id, vault_key_id, view_id, headers, category=None):
     """Creates or updates a Task Template and returns its ID."""
     templates = api_call(f"/project/{project_id}/templates", headers=headers) or []
     template = next((t for t in templates if t["name"] == name), None)
@@ -84,9 +84,9 @@ def create_task_template(project_id, name, playbook, inventory_id, repo_id, env_
         "app": "ansible",
         "name": name,
         "playbook": playbook,
-        "arguments": "[]",
+        "arguments": "[\"--tags\", \"start\"]" if category == "service" else "[]",
         "allow_override_args_in_task": True,
-        "description": f"Automated template for {playbook}",
+        "description": f"Tags: start, stop, restart, reload" if category == "service" else f"Automated template for {playbook}",
         "task_params": {"allow_debug": True},
         "vaults": [{"project_id": project_id, "vault_key_id": vault_key_id, "type": "password"}] if vault_key_id else []
     }
@@ -288,7 +288,7 @@ def main():
         
         categories = {
             "setup": "Setup",
-            "restart": "Restart",
+            "service": "Service",
             "configure": "Configure",
             "other": "Backup",
             "deploy": "Deploy",
@@ -350,7 +350,8 @@ def main():
                     key_id=key_id,
                     vault_key_id=vault_key_id,
                     view_id=view_id,
-                    headers=headers
+                    headers=headers,
+                    category=cat_dir
                 )
                 
                 if template_id:

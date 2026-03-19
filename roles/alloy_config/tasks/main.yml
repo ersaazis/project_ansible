@@ -1,9 +1,40 @@
-- name: Include setup tasks
-  include_tasks: setup.yml
-  tags: [setup]
-  when: "'setup' in ansible_run_tags"
+- name: Create systemd override directory
+  file:
+    path: /etc/systemd/system/alloy.service.d
+    state: directory
+    mode: '0755'
+  when: enable_monitoring | default(false)
 
-- name: Include restart tasks
-  include_tasks: restart.yml
-  tags: [restart]
-  when: "'restart' in ansible_run_tags"
+- name: Create alloy env file
+  copy:
+    dest: /etc/alloy/alloy.env
+    mode: '0600'
+    content: |
+      MIMIR_URL={{ MIMIR_URL }}
+      LOKI_URL={{ LOKI_URL }}
+      TEMPO_URL={{ TEMPO_URL }}
+      ALLOY_DATASOURCE_USER={{ ALLOY_DATASOURCE_USER }}
+      ALLOY_DATASOURCE_PASSWORD={{ ALLOY_DATASOURCE_PASSWORD }}
+  notify: restart alloy
+  when: enable_monitoring | default(false)
+
+- name: Create systemd override
+  copy:
+    dest: /etc/systemd/system/alloy.service.d/override.conf
+    content: |
+      [Service]
+      User=root
+      Group=root
+      EnvironmentFile=/etc/alloy/alloy.env
+  notify:
+    - reload systemd
+    - restart alloy
+  when: enable_monitoring | default(false)
+
+- name: Configure Alloy
+  template:
+    src: alloy-config.j2
+    dest: /etc/alloy/config.alloy
+    mode: '0644'
+  notify: restart alloy
+  when: enable_monitoring | default(false)

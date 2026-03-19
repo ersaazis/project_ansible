@@ -6,8 +6,8 @@
     state: present
     update_cache: yes
 
-- name: Start and enable MySQL service
-  systemd:
+- name: Ensure MySQL is started and enabled
+  service:
     name: mysql
     state: started
     enabled: yes

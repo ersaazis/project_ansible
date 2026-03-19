@@ -7,8 +7,17 @@
     state: present
     update_cache: yes
 
-- name: Ensure PostgreSQL is started and enabled
+- name: Start PostgreSQL service
   systemd:
-    name: postgresql
+    name: postgresql.service
     state: started
     enabled: yes
+
+- name: Verify PostgreSQL version
+  command: sudo -u postgres psql -c "SELECT version();"
+  register: pg_version
+  changed_when: false
+
+- name: Show PostgreSQL version
+  debug:
+    var: pg_version.stdout_lines

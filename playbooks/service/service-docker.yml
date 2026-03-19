@@ -1,0 +1,5 @@
+- name: Service Docker
+  hosts: all
+  become: yes
+  roles:
+    - role: docker_service

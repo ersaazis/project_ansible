@@ -1,25 +1,25 @@
-- name: Start MySQL service
-  service:
-    name: mysql
+- name: Start Nginx service
+  systemd:
+    name: nginx
     state: started
     enabled: yes
   tags: [start]
   when: ansible_run_tags | length == 0 or 'start' in ansible_run_tags
 
-- name: Stop MySQL service
-  service:
-    name: mysql
+- name: Stop Nginx service
+  systemd:
+    name: nginx
     state: stopped
   tags: [stop]
 
-- name: Restart MySQL service
-  service:
-    name: mysql
+- name: Restart Nginx service
+  systemd:
+    name: nginx
     state: restarted
   tags: [restart]
 
-- name: Reload MySQL service
-  service:
-    name: mysql
+- name: Reload Nginx service
+  systemd:
+    name: nginx
     state: reloaded
   tags: [reload]

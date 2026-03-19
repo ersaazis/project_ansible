@@ -1,7 +1,0 @@
-- name: Restart Postgres
-  hosts: all
-  become: yes
-  roles:
-    - role: postgres_service
-      when: database_server | default('') == 'postgres'
-

@@ -1,25 +1,25 @@
-- name: Start MySQL service
-  service:
-    name: mysql
+- name: Start Alloy service
+  systemd:
+    name: alloy
     state: started
     enabled: yes
   tags: [start]
   when: ansible_run_tags | length == 0 or 'start' in ansible_run_tags
 
-- name: Stop MySQL service
-  service:
-    name: mysql
+- name: Stop Alloy service
+  systemd:
+    name: alloy
     state: stopped
   tags: [stop]
 
-- name: Restart MySQL service
-  service:
-    name: mysql
+- name: Restart Alloy service
+  systemd:
+    name: alloy
     state: restarted
   tags: [restart]
 
-- name: Reload MySQL service
-  service:
-    name: mysql
+- name: Reload Alloy service
+  systemd:
+    name: alloy
     state: reloaded
   tags: [reload]
