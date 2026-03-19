@@ -1,5 +1,0 @@
-- name: Install and Configure Alloy
-  hosts: all
-  roles:
-    - alloy_setup
-    - alloy_config

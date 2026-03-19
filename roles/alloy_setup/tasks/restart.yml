@@ -1,0 +1,4 @@
+- name: Restart Alloy service
+  systemd:
+    name: alloy
+    state: restarted

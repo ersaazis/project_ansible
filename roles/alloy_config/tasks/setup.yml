@@ -1,0 +1,27 @@
+- name: Create systemd override directory
+  file:
+    path: /etc/systemd/system/alloy.service.d
+    state: directory
+
+- name: Create systemd override to run as root and set env vars
+  copy:
+    dest: /etc/systemd/system/alloy.service.d/override.conf
+    content: |
+      [Service]
+      User=root
+      Group=root
+      Environment="MIMIR_URL={{ MIMIR_URL }}"
+      Environment="LOKI_URL={{ LOKI_URL }}"
+      Environment="TEMPO_URL={{ TEMPO_URL }}"
+      Environment="ALLOY_DATASOURCE_USER={{ ALLOY_DATASOURCE_USER }}"
+      Environment="ALLOY_DATASOURCE_PASSWORD={{ ALLOY_DATASOURCE_PASSWORD }}"
+  notify:
+    - reload systemd
+    - restart alloy
+
+- name: Configure Alloy
+  template:
+    src: alloy-config.j2
+    dest: /etc/alloy/config.alloy
+  notify: restart alloy
+  when: enable_monitoring | default(false)

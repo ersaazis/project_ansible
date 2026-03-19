@@ -1,0 +1,7 @@
+- name: Setup OpenInfraQuote
+  hosts: control_nodes
+  become: yes
+  roles:
+    - role: terraform
+    - role: ansible_install
+    - role: openinfraquote

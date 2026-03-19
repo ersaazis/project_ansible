@@ -1,28 +1,9 @@
-- name: Install dependencies
-  apt:
-    name:
-      - gpg
-      - curl
-      - software-properties-common
-    state: present
+- name: Include setup tasks
+  include_tasks: setup.yml
+  tags: [setup]
+  when: ansible_run_tags | length == 0 or 'setup' in ansible_run_tags
 
-- name: Add Grafana GPG key
-  apt_key:
-    url: https://apt.grafana.com/gpg.key
-    state: present
-
-- name: Add Grafana repository
-  apt_repository:
-    repo: deb https://apt.grafana.com stable main
-    state: present
-    update_cache: yes
-
-- name: Install Grafana Alloy
-  apt:
-    name: alloy
-    state: present
-
-- name: Enable Alloy service
-  systemd:
-    name: alloy
-    enabled: yes
+- name: Include restart tasks
+  include_tasks: restart.yml
+  tags: [restart]
+  when: "'restart' in ansible_run_tags"

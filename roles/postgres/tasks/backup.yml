@@ -1,0 +1,25 @@
+- name: Create backup directory
+  file:
+    path: /opt/backups/postgres
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: '0755'
+
+- name: Backup PostgreSQL database
+  become_user: postgres
+  shell: "pg_dumpall > /opt/backups/postgres/db_backup_{{ ansible_date_time.iso8601_basic_short }}.sql"
+  register: pg_backup_result
+
+- name: Clean up backups older than 7 days
+  find:
+    paths: /opt/backups/postgres
+    age: 7d
+    recurse: yes
+  register: old_backups
+
+- name: Remove old backups
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ old_backups.files }}"

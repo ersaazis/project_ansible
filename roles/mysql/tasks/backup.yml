@@ -1,0 +1,24 @@
+- name: Create backup directory
+  file:
+    path: /opt/backups/mysql
+    state: directory
+    owner: mysql
+    group: mysql
+    mode: '0755'
+
+- name: Backup MySQL databases
+  shell: "mysqldump --all-databases --user=root --password={{ mysql_root_password | default('root') }} > /opt/backups/mysql/db_backup_{{ ansible_date_time.iso8601_basic_short }}.sql"
+  no_log: true
+
+- name: Clean up backups older than 7 days
+  find:
+    paths: /opt/backups/mysql
+    age: 7d
+    recurse: yes
+  register: old_backups
+
+- name: Remove old backups
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ old_backups.files }}"

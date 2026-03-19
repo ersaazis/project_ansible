@@ -1,0 +1,49 @@
+- name: Install MySQL Server and PyMySQL
+  apt:
+    name: 
+      - mysql-server
+      - python3-pymysql
+    state: present
+    update_cache: yes
+
+- name: Start and enable MySQL service
+  systemd:
+    name: mysql
+    state: started
+    enabled: yes
+
+- name: Set root password
+  mysql_user:
+    name: root
+    host: localhost
+    password: "{{ mysql_root_password | default('root') }}"
+    login_user: root
+    login_password: "{{ mysql_root_password | default('root') }}"
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    check_implicit_admin: yes
+    state: present
+  ignore_errors: true
+
+- name: Remove all anonymous user accounts
+  mysql_user:
+    name: ''
+    host_all: yes
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_password | default('root') }}"
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: Remove the MySQL test database
+  mysql_db:
+    name: test
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_password | default('root') }}"
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: Configure MySQL to listen on all interfaces
+  lineinfile:
+    path: /etc/mysql/mysql.conf.d/mysqld.cnf
+    regexp: '^bind-address\s*='
+    line: 'bind-address = 0.0.0.0'
+  notify: restart mysql

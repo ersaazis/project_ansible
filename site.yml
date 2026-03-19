@@ -1,4 +1,0 @@
-- import_playbook: docker.yml
-- import_playbook: mysql.yml
-- import_playbook: alloy.yml
-- import_playbook: openinfraquote.yml

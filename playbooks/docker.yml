@@ -1,4 +1,0 @@
-- name: Install Docker on Nodes
-  hosts: app_servers:db_servers
-  roles:
-    - docker
