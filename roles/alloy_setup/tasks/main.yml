@@ -1,0 +1,28 @@
+- name: Install dependencies
+  apt:
+    name:
+      - gpg
+      - curl
+      - software-properties-common
+    state: present
+
+- name: Add Grafana GPG key
+  apt_key:
+    url: https://apt.grafana.com/gpg.key
+    state: present
+
+- name: Add Grafana repository
+  apt_repository:
+    repo: deb https://apt.grafana.com stable main
+    state: present
+    update_cache: yes
+
+- name: Install Grafana Alloy
+  apt:
+    name: alloy
+    state: present
+
+- name: Enable Alloy service
+  systemd:
+    name: alloy
+    enabled: yes

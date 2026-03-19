@@ -1,14 +1,11 @@
 # Ignore actual environment files
-.env.semaphore
-.env.db
-.env.provisioner
+.env.*
 
 # Do not ignore templates
-!.env.semaphore.example
-!.env.db.example
-!.env.provisioner.example
+!.env.*.example
 
 # Common ignores
+*.yml.temp
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

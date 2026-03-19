@@ -1,0 +1,3 @@
+enable_monitoring: true
+enable_backup: true
+database_server: mysql

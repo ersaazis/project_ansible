@@ -1,49 +1,47 @@
-# Ansible Semaphore Development Stack
+# HomeLab Ansible Configuration
 
-This directory contains the Ansible configuration and Semaphore UI setup for the homelab environment. It features automated provisioning and secure environment management.
+This repository contains the Ansible playbooks and inventory for managing the HomeLab infrastructure across multiple environments.
 
 ## Directory Structure
 
-- `docker-compose.yml`: Manages the Semaphore and Postgres services.
-- `inventory.yml`: Ansible inventory with hierarchical grouping (tagging).
-- `scripts/`:
-  - `provision-semaphore.py`: Automated setup script for Semaphore projects and environments.
-- `roles/`: Ansible roles.
-- `config/`: Configuration templates (e.g., Alloy).
+- `inventories/`: Environment-specific inventories.
+    - `development/`, `staging/`, `mirror/`, `production/`.
+    - Each environment has `group_vars` and `host_vars`.
+- `host_vars/<hostname>/`: Host-specific variables.
+    - `vars.yml`: General (non-sensitive) host variables.
+    - `vault.yml`: Sensitive host variables (SSH user, passwords, DB root passwords). **Encrypt these with `ansible-vault`!**
+- `roles/`: Modular Ansible roles:
+    - `docker`: Official Docker Engine installation.
+    - `mysql`: Database setup with environment-specific passwords.
+    - `alloy_setup` & `alloy_config`: Modular Grafana Alloy installation and dynamic configuration.
+    - `terraform` & `ansible_install`: Tools for the control node.
+    - `openinfraquote`: Application repository and deployment logic.
+- `playbooks/`: Individual playbooks for each service.
+- `site.yml`: Master playbook that orchestrates the entire deployment.
 
-## Setup & Deployment
+## Deployment
 
-### 1. Environment Configuration
-The stack uses split environment files for security. Before starting, create your `.env` files from the templates:
+To deploy the entire stack:
 ```bash
-cp .env.semaphore.example .env.semaphore
-cp .env.db.example .env.db
-cp .env.provisioner.example .env.provisioner
-```
-Edit the `.env.*` files with your actual credentials.
-
-### 2. Start the Stack
-```bash
-docker compose up -d
-```
-The `provisioner` service will automatically:
-- Create the **HomeLab** project in Semaphore.
-- Register the local repository and `inventory.yml`.
-- Inject environment variables detected from `inventory.yml`.
-
-## How to use "Tags" (Groups)
-
-Target hosts in your commands or playbooks using group names:
-- `development`: All development nodes.
-- `app_servers`: Application-specific nodes.
-- `db_servers`: Database-specific nodes.
-
-Example:
-```bash
-ansible -i inventory.yml app_servers -m ping
+ansible-playbook -i inventories/staging/hosts.yml site.yml
 ```
 
-## Security Note
+## Automated Vault Encryption
 
-- **Passphrases & Secrets**: These are stored in `.env.provisioner` and injected into Semaphore's "Environment" variables.
-- **Git**: The `.gitignore` prevents your active `.env.*` files from being committed.
+To simplify secret management, use the `./vault-encrypt.sh` script:
+1.  Set `ANSIBLE_VAULT_PASSWORD` in `.env.vault`.
+2.  Run `./vault-encrypt.sh`.
+    - If `vault.yml.temp` exists, it will re-encrypt your changes into `vault.yml`.
+    - If `vault.yml.temp` is missing, it will decrypt `vault.yml` so you can edit it.
+
+## Security
+
+- Sensitive data is managed at the host level in `host_vars/<hostname>/vault.yml`.
+- Use `ansible-vault encrypt` on all `vault.yml` files before committing.
+- Global secrets are in `group_vars/vault.yml`.
+
+## Configuration
+
+- **Timezone**: Set to `Asia/Jakarta` globally in `group_vars/all.yml`.
+- **Monitoring**: Controlled by `enable_monitoring` flag in `host_vars`.
+- **Backup**: Controlled by `enable_backup` flag in `host_vars`.

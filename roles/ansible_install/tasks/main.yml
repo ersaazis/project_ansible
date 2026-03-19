@@ -1,0 +1,10 @@
+- name: Add Ansible official PPA
+  apt_repository:
+    repo: ppa:ansible/ansible
+    state: present
+    update_cache: yes
+
+- name: Install Ansible
+  apt:
+    name: ansible
+    state: present

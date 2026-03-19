@@ -1,2 +1,3 @@
----
-mysql_root_password: "root"
+# Variables in this file have high precedence. 
+# Avoid putting secrets here. 
+# Sensitive variables should be in group_vars/vault.yml

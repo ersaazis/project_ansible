@@ -1,0 +1,6 @@
+- name: Deploy OpenInfraQuote on Control Nodes
+  hosts: control_nodes
+  roles:
+    - terraform
+    - ansible_install
+    - openinfraquote

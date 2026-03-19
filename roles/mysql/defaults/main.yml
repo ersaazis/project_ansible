@@ -1,0 +1,3 @@
+# Fallback default value for root password.
+# In production, this should be overridden in group_vars/vault.yml
+mysql_root_password: "root"
