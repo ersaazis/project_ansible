@@ -1,5 +1,14 @@
 # HomeLab Ansible Configuration
 
+> [!NOTE]
+> **Consultation & Implementation Services**
+> If you are interested in consulting or professional implementation for your company, please feel free to reach out:
+> - **Name**: Ersa Azis Mansyur
+> - **Email**: [eam24maret@gmail.com](mailto:eam24maret@gmail.com)
+> - **LinkedIn**: [linkedin.com/in/ersaazis](https://www.linkedin.com/in/ersaazis/)
+
+---
+
 This repository contains the Ansible playbooks and inventory for managing the HomeLab infrastructure across multiple environments. The architecture is designed to be highly modular and automated, specifically built to integrate seamlessly with an Ansible Semaphore UI.
 
 ## Directory Structure
@@ -51,3 +60,6 @@ To simplify secret management, use the `./vault-encrypt.sh` script:
 - **Timezone**: Set to `Asia/Jakarta` globally in `group_vars/all.yml`.
 - **Monitoring**: Controlled by `enable_monitoring` flag in `host_vars`.
 - **Backup**: Controlled by `enable_backup` flag in `host_vars`. Triggered via `playbooks/other/` calling respective backup tags.
+
+## ⚖️ License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
