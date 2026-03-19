@@ -4,28 +4,28 @@ import time
 import urllib.request
 import re
 import urllib.error
+import glob
 
 """
 Semaphore Provisioning Script
 =============================
 
 This script automates the initial setup of Ansible Semaphore.
-It follows the Semaphore domain model:
-
-1.  **Project**: The main container for your work (e.g., "HomeLab").
-2.  **Key Store**: Stores credentials (SSH keys, passwords, sudo passwords).
-3.  **Inventory**: Defines your hosts (from a static file or script).
-4.  **Repository**: Points to your Ansible code (Git or local directory).
-5.  **Environment**: Extra variables passed to Ansible (JSON format).
-6.  **Task Template**: The "Runnable" object. It links a Playbook file 
-    from a Repository to an Inventory and an Environment with a specific Key.
-
-Without a Task Template, you won't see any "Tasks" to run in the UI.
+It scans the 'playbooks' directory to create Task Templates for:
+1. Setup
+2. Restart
+3. Schedule (with cron)
 """
 
 SEMAPHORE_URL = os.getenv("SEMAPHORE_URL", "http://semaphore:3000/api")
 ADMIN_USER = os.getenv("SEMAPHORE_ADMIN", "admin")
 ADMIN_PASS = os.getenv("SEMAPHORE_ADMIN_PASSWORD", "admin")
+
+# Default cron schedules for specific playbooks in the 'other' category
+DEFAULT_SCHEDULES = {
+    "mysql.yml": "0 2 * * *",    # Daily at 2 AM
+    "postgres.yml": "0 3 * * *", # Daily at 3 AM
+}
 
 def api_call(path, method="GET", data=None, headers=None):
     if headers is None:
@@ -39,7 +39,8 @@ def api_call(path, method="GET", data=None, headers=None):
         with urllib.request.urlopen(req) as res:
             if res.status == 204:
                 return True
-            return json.loads(res.read().decode("utf-8"))
+            content = res.read().decode("utf-8")
+            return json.loads(content) if content else True
     except urllib.error.HTTPError as e:
         print(f"Error calling {url}: {e}")
         try:
@@ -64,17 +65,16 @@ def wait_for_semaphore():
     return False
 
 def create_task_template(project_id, name, playbook, inventory_id, repo_id, env_id, key_id, vault_key_id, headers):
-    """
-    Creates or updates a Task Template.
-    """
+    """Creates or updates a Task Template and returns its ID."""
     templates = api_call(f"/project/{project_id}/templates", headers=headers) or []
     template = next((t for t in templates if t["name"] == name), None)
     
-    # Some versions require 'app' to be set (usually 'ansible')
-    # and 'view_id' (sometimes referred to as 'app id' in error messages)
     views = api_call(f"/project/{project_id}/views", headers=headers) or []
     view_id = views[0]["id"] if views else None
 
+    # Determine if this should run with become
+    is_setup = "Setup" in name
+    
     data = {
         "project_id": project_id,
         "inventory_id": inventory_id,
@@ -82,32 +82,66 @@ def create_task_template(project_id, name, playbook, inventory_id, repo_id, env_
         "environment_id": env_id,
         "ssh_key_id": key_id,
         "view_id": view_id,
-        "app": "ansible",  # Targeted fix
+        "app": "ansible",
         "name": name,
         "playbook": playbook,
         "arguments": "[]",
         "allow_override_args_in_task": False,
-        "description": f"Automatically created template for {playbook}"
+        "description": f"Automated template for {playbook}"
     }
 
-    # If the API accepts vault_key_id, we send it
     if vault_key_id:
         data["vault_key_id"] = vault_key_id
 
     if not template:
-        print(f"Creating Task Template: {name} ({playbook})")
-        return api_call(f"/project/{project_id}/templates", method="POST", data=data, headers=headers)
+        print(f"Creating Task Template: {name}")
+        res = api_call(f"/project/{project_id}/templates", method="POST", data=data, headers=headers)
+        return res["id"] if res and isinstance(res, dict) else None
     else:
-        print(f"Updating Task Template: {name} ({playbook})")
+        print(f"Updating Task Template: {name}")
         data["id"] = template["id"]
-        return api_call(f"/project/{project_id}/templates/{template['id']}", method="PUT", data=data, headers=headers)
+        api_call(f"/project/{project_id}/templates/{template['id']}", method="PUT", data=data, headers=headers)
+        return template["id"]
+
+def create_schedule(project_id, template_id, name, cron, repo_id, headers):
+    """Creates or updates a schedule for a template."""
+    schedules = api_call(f"/project/{project_id}/schedules", headers=headers) or []
+    schedule = next((s for s in schedules if s["template_id"] == template_id), None)
+    
+    data = {
+        "project_id": project_id,
+        "template_id": template_id,
+        "name": name,
+        "cron_format": cron,
+        "active": True,
+        "run_once": False,
+        "delete_after_run": False,
+        "task_params": {
+            "params": {},
+            "environment": "{}"
+        },
+        "run_at": None,
+        "type": ""
+    }
+    
+    if not schedule:
+        print(f"Creating Schedule for {name}: {cron}")
+        return api_call(f"/project/{project_id}/schedules", method="POST", data=data, headers=headers)
+    else:
+        # Check if update is needed
+        existing_cron = schedule.get("cron_format")
+        if existing_cron != cron or schedule.get("name") != name or not schedule.get("active"):
+            print(f"Updating Schedule for {name}: {cron}")
+            data["id"] = schedule["id"]
+            return api_call(f"/project/{project_id}/schedules/{schedule['id']}", method="PUT", data=data, headers=headers)
+        return schedule
 
 def main():
     if not wait_for_semaphore():
         print("Semaphore did not start in time. Exiting.")
         return
 
-    # 1. Login and get session cookie
+    # 1. Login
     print("Logging in...")
     auth_req = urllib.request.Request(f"{SEMAPHORE_URL}/auth/login", 
                                       data=json.dumps({"auth": ADMIN_USER, "password": ADMIN_PASS}).encode("utf-8"),
@@ -125,10 +159,7 @@ def main():
         print(f"Login failed: {e}")
         return
 
-    headers = {
-        "Content-Type": "application/json",
-        "Cookie": session_cookie
-    }
+    headers = {"Content-Type": "application/json", "Cookie": session_cookie}
 
     # 2. Project Setup
     projects = api_call("/projects", headers=headers) or []
@@ -142,25 +173,29 @@ def main():
         return
     project_id = project["id"]
 
-    # 3. Key Setup (None key for local repo)
+    # 3. Keys Setup
     keys = api_call(f"/project/{project_id}/keys", headers=headers) or []
-    none_key = next((k for k in keys if k["name"] == "None"), None)
-    if not none_key:
-        print("Creating 'None' SSH Key (for local repository access)...")
-        none_key = api_call(f"/project/{project_id}/keys", method="POST", data={"name": "None", "type": "none"}, headers=headers)
     
-    if not none_key:
-        print("Failed to find or create key 'None'.")
-        return
-    key_id = none_key["id"]
+    # Repo Key (None for local)
+    key_id = next((k["id"] for k in keys if k["name"] == "None"), None)
+    if not key_id:
+        print("Creating 'None' SSH Key...")
+        res = api_call(f"/project/{project_id}/keys", method="POST", 
+                        data={"project_id": project_id, "name": "None", "type": "none"}, headers=headers)
+        key_id = res["id"] if res else None
 
-    # Vault Password Key
-    vault_key = next((k for k in keys if k["name"] == "Ansible Vault Password"), None)
-    if not vault_key:
+    # Vault Key
+    vault_key_id = next((k["id"] for k in keys if k["name"] == "Ansible Vault Password"), None)
+    if not vault_key_id:
         print("Creating 'Ansible Vault Password' Key...")
-        vault_key = api_call(f"/project/{project_id}/keys", method="POST", data={"name": "Ansible Vault Password", "type": "login_password", "login_password": {"password": "change_me", "username": "vault"}}, headers=headers)
-    
-    vault_key_id = vault_key["id"] if vault_key else None
+        res = api_call(f"/project/{project_id}/keys", method="POST", 
+                        data={
+                            "project_id": project_id,
+                            "name": "Ansible Vault Password", 
+                            "type": "login_password", 
+                            "login_password": {"password": "change_me", "username": "vault"}
+                        }, headers=headers)
+        vault_key_id = res["id"] if res else None
 
     # 4. Repo Setup
     repos = api_call(f"/project/{project_id}/repositories", headers=headers) or []
@@ -168,100 +203,116 @@ def main():
     if not repo:
         print("Registering Ansible Repository...")
         repo = api_call(f"/project/{project_id}/repositories", method="POST",
-                        data={
-                            "project_id": project_id,
-                            "name": "HomeLab Ansible",
-                            "git_url": "/home/semaphore/ansible",
-                            "git_branch": "master",
-                            "ssh_key_id": key_id
-                        }, headers=headers)
-    
-    if not repo:
-        print("Failed to find or create repository 'HomeLab Ansible'.")
-        return
+                        data={"project_id": project_id, "name": "HomeLab Ansible", "git_url": "/home/semaphore/ansible", "git_branch": "master", "ssh_key_id": key_id}, headers=headers)
     repo_id = repo["id"]
 
+    # 5. Environments Setup
     environments = ["development", "staging", "production", "mirror"]
-    
     inventories = api_call(f"/project/{project_id}/inventory", headers=headers) or []
     envs = api_call(f"/project/{project_id}/environment", headers=headers) or []
+
+    # Local playbook discovery
+    current_script = os.path.abspath(__file__)
+    script_dir = os.path.dirname(current_script)
+    
+    # Try different possible locations for playbooks
+    # On host: ansible/scripts -> ansible/playbooks
+    # In container: /home/semaphore/ansible/scripts -> /home/semaphore/ansible/playbooks
+    # If run via mount: /scripts -> /playbooks
+    possible_roots = [
+        os.path.abspath(os.path.join(script_dir, "..", "playbooks")),
+        "/home/semaphore/ansible/playbooks",
+        "/playbooks"
+    ]
+    
+    playbook_root = None
+    for root in possible_roots:
+        if root and os.path.isdir(root):
+            playbook_root = root
+            break
+            
+    if not playbook_root:
+        print(f"CRITICAL: Could not find playbooks directory. Looked in: {possible_roots}")
+        return
+
+    print(f"Found playbooks at: {playbook_root}")
+    
+    categories = {
+        "setup": "Setup",
+        "restart": "Restart",
+        "other": "Backup"
+    }
 
     for env_name in environments:
         env_title = env_name.capitalize()
         
-        # 5. Inventory Setup
+        # Inventory
         inv_name = f"HomeLab {env_title} Inventory"
         inventory = next((i for i in inventories if i["name"] == inv_name), None)
-        inv_data = {
-            "project_id": project_id,
-            "name": inv_name,
-            "type": "file",
-            "inventory": f"inventories/{env_name}/hosts.yml",
-            "repository_id": repo_id,
-            "ssh_key_id": key_id
-        }
-
+        inv_data = {"project_id": project_id, "name": inv_name, "type": "file", "inventory": f"inventories/{env_name}/hosts.yml", "repository_id": repo_id, "ssh_key_id": key_id}
         if not inventory:
-            print(f"Creating Inventory '{inv_name}'...")
             inventory = api_call(f"/project/{project_id}/inventory", method="POST", data=inv_data, headers=headers)
         else:
-            print(f"Updating Inventory '{inv_name}'...")
             inv_data["id"] = inventory["id"]
             api_call(f"/project/{project_id}/inventory/{inventory['id']}", method="PUT", data=inv_data, headers=headers)
-        
-        if not inventory:
-            print(f"Failed to find or create inventory '{inv_name}'.")
-            continue
         inventory_id = inventory["id"]
 
-        # 6. Environment Setup (Empty vars)
+        # Environment (Extra Vars)
+        # SEMA_TIP: Environments in Semaphore ARE effectively Variable Groups.
         env_vars = next((e for e in envs if e["name"] == env_title), None)
-        env_data = {
-            "project_id": project_id,
-            "name": env_title,
-            "json": "{}", # Extra vars empty, we use Vault now
-            "env": "{}" # OS env vars empty
-        }
-
+        env_data = {"project_id": project_id, "name": env_title, "json": "{}", "env": "{}"}
         if not env_vars:
-            print(f"Creating '{env_title}' Environment...")
             env_vars = api_call(f"/project/{project_id}/environment", method="POST", data=env_data, headers=headers)
         else:
-            print(f"Updating '{env_title}' Environment...")
             env_data["id"] = env_vars["id"]
             api_call(f"/project/{project_id}/environment/{env_vars['id']}", method="PUT", data=env_data, headers=headers)
-        
-        if not env_vars:
-            print(f"Failed to find or create environment '{env_title}'.")
-            continue
         env_id = env_vars["id"]
 
-        # 7. Task Template Setup
         print(f"Setting up Task Templates for {env_title}...")
         
-        create_task_template(
-            project_id=project_id,
-            name=f"{env_title} - 1. Full Deployment",
-            playbook="playbooks/site.yml",
-            inventory_id=inventory_id,
-            repo_id=repo_id,
-            env_id=env_id,
-            key_id=key_id, # SSH Key for Repo
-            vault_key_id=vault_key_id, # Target vault key
-            headers=headers
-        )
+        for cat_dir, cat_label in categories.items():
+            path = os.path.join(playbook_root, cat_dir)
+            if not os.path.exists(path):
+                print(f"  - Category folder not found: {path}")
+                continue
+            
+            pb_files = glob.glob(os.path.join(path, "*.yml")) + glob.glob(os.path.join(path, "*.yaml"))
+            print(f"  - Found {len(pb_files)} playbooks in {cat_dir}")
+            
+            for pb_file in pb_files:
+                pb_name = os.path.basename(pb_file)
+                print(f"    - Processing: {pb_name}")
+                pb_title = os.path.splitext(pb_name)[0].replace("_", " ").capitalize()
+                
+                # Full Template Name: [Env] Category - Service
+                # e.g. [Production] Setup - Docker
+                template_name = f"[{env_title}] {cat_label} - {pb_title}"
+                playbook_rel_path = f"playbooks/{cat_dir}/{pb_name}"
+                
+                template_id = create_task_template(
+                    project_id=project_id,
+                    name=template_name,
+                    playbook=playbook_rel_path,
+                    inventory_id=inventory_id,
+                    repo_id=repo_id,
+                    env_id=env_id,
+                    key_id=key_id,
+                    vault_key_id=vault_key_id,
+                    headers=headers
+                )
 
-        create_task_template(
-            project_id=project_id,
-            name=f"{env_title} - 2. Docker Setup",
-            playbook="playbooks/setup_docker.yml",
-            inventory_id=inventory_id,
-            repo_id=repo_id,
-            env_id=env_id,
-            key_id=key_id,
-            vault_key_id=vault_key_id,
-            headers=headers
-        )
+                # If category is other (Backup), create a schedule
+                if cat_dir == "other" and template_id:
+                    cron = DEFAULT_SCHEDULES.get(pb_name)
+                    if cron:
+                        create_schedule(
+                            project_id=project_id,
+                            template_id=template_id,
+                            name=f"{template_name} (Cron)",
+                            cron=cron,
+                            repo_id=repo_id,
+                            headers=headers
+                        )
 
     print("-" * 40)
     print("Provisioning complete for all environments!")

@@ -1,22 +1,33 @@
 # Gemini Knowledge & Project Preferences
 
-This file documents key architectural decisions and user preferences for this project.
+This file documents key architectural decisions, rules, and user preferences for this project. **AI Models MUST read AND strictly adhere to these rules before suggesting or making changes.**
 
-## User Preferences
+> **🚨 CRITICAL INSTRUCTION FOR AI ASSISTANTS 🚨**
+> If the user asks you to "update context", "pelajari project ini", or requests an update to the project's documentation/rules, you **MUST** use the `mcp:sequential-thinking` (Sequential Thinking) tool to meticulously study the project's directory structure, roles, playbooks, variables, and scripts from scratch. Do this to capture the latest architecture, flow, and pattern changes, and then update both `GEMINI.md` and `README.md` to reflect the new state accurately. Do not make assumptions without analyzing the workspace first.
+
+## Strict User Preferences & AI Guidelines
 - **YAML Formatting**: DO NOT use `---` at the beginning of Ansible/YAML files unless multiple documents are in the same file.
-- **Variable Placement**: 
-    - Secrets (SSH user, passwords, DB root passwords) MUST be in `host_vars/<hostname>/vault.yml`.
-    - Non-sensitive host vars (monitoring flags, DB types) MUST be in `host_vars/<hostname>/vars.yml`.
-    - Global non-sensitive vars go to `group_vars/all.yml`.
+- **Variable Placement Rules**: 
+    - **Secrets** (SSH user, passwords, DB root passwords): MUST be placed in `host_vars/<hostname>/vault.yml`.
+    - **Non-sensitive host vars** (monitoring flags, DB types): MUST be placed in `host_vars/<hostname>/vars.yml`.
+    - **Global non-sensitive vars**: MUST go to `group_vars/all.yml` or global `group_vars/`.
 - **Vault Automation**: 
-    - Use `./vault-encrypt.sh` for bidirectional sync.
-    - If `.temp` exists: Updates and encrypts `vault.yml` based on it.
-    - If `.temp` is missing: Decrypts `vault.yml` to create a new `.temp` for editing.
+    - NEVER edit `vault.yml` directly if encrypted. Use `./vault-encrypt.sh` for bidirectional sync.
+    - If `<file>.temp` exists: The script updates and encrypts `vault.yml` based on the `.temp` file.
+    - If `<file>.temp` is missing: The script decrypts `vault.yml` to create a new `.temp` for editing.
+    - Submitting changes: Run the script to apply edits from `.temp` into the encrypted `vault.yml`.
     - The vault password must be retrieved from `.env.vault` (`ANSIBLE_VAULT_PASSWORD`).
 - **Timezone**: Default project timezone is `Asia/Jakarta`.
 
-## Project Architecture
+## Project Architecture & Playbook Structure
 - **Environment Separation**: Four distinct environments (`development`, `staging`, `mirror`, `production`).
+- **Playbook Organization** (within `playbooks/` directory):
+    - `setup/`: Playbooks for initial installation and configuration of services.
+    - `restart/`: Playbooks specifically to restart services (e.g., after config updates or via Semaphore).
+    - `other/`: Playbooks for auxiliary operations like `Backup`. Playbooks here should have descriptive task names (e.g., `- name: Backup MySQL`) and call specific role tags (`tags: [backup]`).
+- **Role Structure Conventions**:
+    - **Complex Roles** (e.g., databases, docker, alloy): Must separate tasks into `setup.yml`, `restart.yml`, `main.yml` (includes both), and optionally `backup.yml`. No scheduling logic should reside in roles.
+    - **Simple Roles** (e.g., `openinfraquote`): Kept minimal, often just a single `main.yml`.
 - **Alloy Configuration**:
     - Modularized into `alloy_setup` and `alloy_config`.
     - Config fragments stored in `ansible/config/alloy/<env>/`.
