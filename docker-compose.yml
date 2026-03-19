@@ -25,12 +25,12 @@ services:
     restart: unless-stopped
     volumes:
       - semaphore_db:/var/lib/postgresql/data
-
   provisioner:
     image: python:3-alpine
     container_name: semaphore-provisioner
     env_file:
       - .env.semaphore
+      - .env.vault
     volumes:
       - ./scripts:/scripts:ro
       - .:/home/semaphore/ansible:ro

@@ -86,12 +86,10 @@ def create_task_template(project_id, name, playbook, inventory_id, repo_id, env_
         "name": name,
         "playbook": playbook,
         "arguments": "[]",
-        "allow_override_args_in_task": False,
-        "description": f"Automated template for {playbook}"
+        "allow_override_args_in_task": True,
+        "description": f"Automated template for {playbook}",
+        "vaults": [{"name": None, "vault_key_id": vault_key_id, "type": "password", "script": None}] if vault_key_id else []
     }
-
-    if vault_key_id:
-        data["vault_key_id"] = vault_key_id
 
     if not template:
         print(f"Creating Task Template: {name}")
@@ -184,18 +182,36 @@ def main():
                         data={"project_id": project_id, "name": "None", "type": "none"}, headers=headers)
         key_id = res["id"] if res else None
 
+    def read_vault_pass():
+        env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env.vault")
+        if os.path.exists(env_path):
+            with open(env_path, "r") as f:
+                for line in f:
+                    if line.startswith("ANSIBLE_VAULT_PASSWORD="):
+                        return line.split("=", 1)[1].strip()
+        return os.environ.get("ANSIBLE_VAULT_PASSWORD", "change_me")
+
+    vault_password = read_vault_pass()
+
     # Vault Key
-    vault_key_id = next((k["id"] for k in keys if k["name"] == "Ansible Vault Password"), None)
-    if not vault_key_id:
-        print("Creating 'Ansible Vault Password' Key...")
-        res = api_call(f"/project/{project_id}/keys", method="POST", 
-                        data={
-                            "project_id": project_id,
-                            "name": "Ansible Vault Password", 
-                            "type": "login_password", 
-                            "login_password": {"password": "change_me", "username": "vault"}
-                        }, headers=headers)
+    vault_key_name = "Ansible Vault Password"
+    vault_key = next((k for k in keys if k["name"] == vault_key_name), None)
+    vault_key_data = {
+        "project_id": project_id,
+        "name": vault_key_name, 
+        "type": "login_password", 
+        "login_password": {"password": vault_password, "username": "vault"}
+    }
+    
+    if not vault_key:
+        print(f"Creating '{vault_key_name}' Key...")
+        res = api_call(f"/project/{project_id}/keys", method="POST", data=vault_key_data, headers=headers)
         vault_key_id = res["id"] if res else None
+    else:
+        print(f"Updating '{vault_key_name}' Key...")
+        vault_key_data["id"] = vault_key["id"]
+        api_call(f"/project/{project_id}/keys/{vault_key['id']}", method="PUT", data=vault_key_data, headers=headers)
+        vault_key_id = vault_key["id"]
 
     # 4. Repo Setup
     repos = api_call(f"/project/{project_id}/repositories", headers=headers) or []
