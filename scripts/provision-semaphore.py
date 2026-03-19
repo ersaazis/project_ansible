@@ -27,6 +27,8 @@ DEFAULT_SCHEDULES = {
     "postgres.yml": "0 3 * * *", # Daily at 3 AM
 }
 
+VIEWS = ["setup", "restart", "other", "deploy", "build"]
+
 def api_call(path, method="GET", data=None, headers=None):
     if headers is None:
         headers = {"Content-Type": "application/json"}
@@ -64,13 +66,10 @@ def wait_for_semaphore():
             time.sleep(2)
     return False
 
-def create_task_template(project_id, name, playbook, inventory_id, repo_id, env_id, key_id, vault_key_id, tag, headers):
+def create_task_template(project_id, name, playbook, inventory_id, repo_id, env_id, key_id, vault_key_id, tag, view_id, headers):
     """Creates or updates a Task Template and returns its ID."""
     templates = api_call(f"/project/{project_id}/templates", headers=headers) or []
     template = next((t for t in templates if t["name"] == name), None)
-    
-    views = api_call(f"/project/{project_id}/views", headers=headers) or []
-    view_id = views[0]["id"] if views else None
 
     # Determine if this should run with become
     is_setup = "Setup" in name
@@ -162,109 +161,139 @@ def main():
 
     headers = {"Content-Type": "application/json", "Cookie": session_cookie}
 
-    # 2. Project Setup
-    projects = api_call("/projects", headers=headers) or []
-    project = next((p for p in projects if p["name"] == "HomeLab"), None)
-    if not project:
-        print("Creating project 'HomeLab'...")
-        project = api_call("/projects", method="POST", data={"name": "HomeLab"}, headers=headers)
-    
-    if not project:
-        print("Failed to find or create project 'HomeLab'.")
-        return
-    project_id = project["id"]
-
-    # 3. Keys Setup
-    keys = api_call(f"/project/{project_id}/keys", headers=headers) or []
-    
-    # Repo Key (None for local)
-    key_id = next((k["id"] for k in keys if k["name"] == "None"), None)
-    if not key_id:
-        print("Creating 'None' SSH Key...")
-        res = api_call(f"/project/{project_id}/keys", method="POST", 
-                        data={"project_id": project_id, "name": "None", "type": "none"}, headers=headers)
-        key_id = res["id"] if res else None
-
-    def read_vault_pass():
-        env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env.vault")
-        if os.path.exists(env_path):
-            with open(env_path, "r") as f:
-                for line in f:
-                    if line.startswith("ANSIBLE_VAULT_PASSWORD="):
-                        return line.split("=", 1)[1].strip()
-        return os.environ.get("ANSIBLE_VAULT_PASSWORD", "change_me")
-
-    vault_password = read_vault_pass()
-
-    # Vault Key
-    vault_key_name = "Ansible Vault Password"
-    vault_key = next((k for k in keys if k["name"] == vault_key_name), None)
-    vault_key_data = {
-        "project_id": project_id,
-        "name": vault_key_name, 
-        "type": "login_password", 
-        "login_password": {"password": vault_password, "username": "vault"}
-    }
-    
-    if not vault_key:
-        print(f"Creating '{vault_key_name}' Key...")
-        res = api_call(f"/project/{project_id}/keys", method="POST", data=vault_key_data, headers=headers)
-        vault_key_id = res["id"] if res else None
-    else:
-        print(f"Updating '{vault_key_name}' Key...")
-        vault_key_data["id"] = vault_key["id"]
-        api_call(f"/project/{project_id}/keys/{vault_key['id']}", method="PUT", data=vault_key_data, headers=headers)
-        vault_key_id = vault_key["id"]
-
-    # 4. Repo Setup
-    repos = api_call(f"/project/{project_id}/repositories", headers=headers) or []
-    repo = next((r for r in repos if r["name"] == "HomeLab Ansible"), None)
-    if not repo:
-        print("Registering Ansible Repository...")
-        repo = api_call(f"/project/{project_id}/repositories", method="POST",
-                        data={"project_id": project_id, "name": "HomeLab Ansible", "git_url": "/home/semaphore/ansible", "git_branch": "master", "ssh_key_id": key_id}, headers=headers)
-    repo_id = repo["id"]
-
-    # 5. Environments Setup
-    environments = ["development", "staging", "production", "mirror"]
-    inventories = api_call(f"/project/{project_id}/inventory", headers=headers) or []
-    envs = api_call(f"/project/{project_id}/environment", headers=headers) or []
-
-    # Local playbook discovery
+    # Local discovery of playbooks and inventories
     current_script = os.path.abspath(__file__)
     script_dir = os.path.dirname(current_script)
     
     # Try different possible locations for playbooks
-    # On host: ansible/scripts -> ansible/playbooks
-    # In container: /home/semaphore/ansible/scripts -> /home/semaphore/ansible/playbooks
-    # If run via mount: /scripts -> /playbooks
-    possible_roots = [
+    possible_playbook_roots = [
         os.path.abspath(os.path.join(script_dir, "..", "playbooks")),
         "/home/semaphore/ansible/playbooks",
         "/playbooks"
     ]
     
     playbook_root = None
-    for root in possible_roots:
+    for root in possible_playbook_roots:
         if root and os.path.isdir(root):
             playbook_root = root
             break
             
     if not playbook_root:
-        print(f"CRITICAL: Could not find playbooks directory. Looked in: {possible_roots}")
+        print(f"CRITICAL: Could not find playbooks directory. Looked in: {possible_playbook_roots}")
         return
 
-    print(f"Found playbooks at: {playbook_root}")
-    
-    categories = {
-        "setup": "Setup",
-        "restart": "Restart",
-        "other": "Backup"
-    }
+    # Find inventories directory (should be sibling to playbooks)
+    inventory_root = os.path.abspath(os.path.join(os.path.dirname(playbook_root), "inventories"))
+    if not os.path.isdir(inventory_root):
+        print(f"CRITICAL: Could not find inventories directory at {inventory_root}")
+        return
 
-    for env_name in environments:
+    # Discover environments from inventories/ subdirectories
+    discovered_envs = [d for d in os.listdir(inventory_root) if os.path.isdir(os.path.join(inventory_root, d)) and not d.startswith(".")]
+    if not discovered_envs:
+        print(f"CRITICAL: No environments found in {inventory_root}")
+        return
+
+    print(f"Found environments: {', '.join(discovered_envs)}")
+
+    for env_name in discovered_envs:
         env_title = env_name.capitalize()
+        project_name = f"HomeLab {env_title}"
+        print(f"\n{'='*40}")
+        print(f"Provisioning Project: {project_name}")
+        print(f"{'='*40}")
+
+        # 2. Project Setup
+        projects = api_call("/projects", headers=headers) or []
+        project = next((p for p in projects if p["name"] == project_name), None)
+        if not project:
+            print(f"Creating project '{project_name}'...")
+            project = api_call("/projects", method="POST", data={"name": project_name}, headers=headers)
         
+        if not project:
+            print(f"Failed to find or create project '{project_name}'. Skipping.")
+            continue
+        project_id = project["id"]
+
+        # 3. Keys Setup
+        keys = api_call(f"/project/{project_id}/keys", headers=headers) or []
+        
+        # Repo Key (None for local)
+        key_id = next((k["id"] for k in keys if k["name"] == "None"), None)
+        if not key_id:
+            print("Creating 'None' SSH Key...")
+            res = api_call(f"/project/{project_id}/keys", method="POST", 
+                            data={"project_id": project_id, "name": "None", "type": "none"}, headers=headers)
+            key_id = res["id"] if res else None
+
+        def read_vault_pass():
+            # Adjust path to find .env.vault relative to scripts directory
+            # homelab/ansible/scripts/provision-semaphore.py -> homelab/ansible/.env.vault
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            env_path = os.path.join(os.path.dirname(script_dir), ".env.vault")
+            if os.path.exists(env_path):
+                with open(env_path, "r") as f:
+                    for line in f:
+                        if line.startswith("ANSIBLE_VAULT_PASSWORD="):
+                            return line.split("=", 1)[1].strip()
+            return os.environ.get("ANSIBLE_VAULT_PASSWORD", "change_me")
+
+        vault_password = read_vault_pass()
+
+        # Vault Key
+        vault_key_name = "Ansible Vault Password"
+        vault_key = next((k for k in keys if k["name"] == vault_key_name), None)
+        vault_key_data = {
+            "project_id": project_id,
+            "name": vault_key_name, 
+            "type": "login_password", 
+            "login_password": {"password": vault_password, "username": "vault"}
+        }
+        
+        if not vault_key:
+            print(f"Creating '{vault_key_name}' Key...")
+            res = api_call(f"/project/{project_id}/keys", method="POST", data=vault_key_data, headers=headers)
+            vault_key_id = res["id"] if res else None
+        else:
+            print(f"Updating '{vault_key_name}' Key...")
+            vault_key_data["id"] = vault_key["id"]
+            api_call(f"/project/{project_id}/keys/{vault_key['id']}", method="PUT", data=vault_key_data, headers=headers)
+            vault_key_id = vault_key["id"]
+
+        # 4. Repo Setup
+        repos = api_call(f"/project/{project_id}/repositories", headers=headers) or []
+        repo = next((r for r in repos if r["name"] == "HomeLab Ansible"), None)
+        if not repo:
+            print("Registering Ansible Repository...")
+            repo = api_call(f"/project/{project_id}/repositories", method="POST",
+                            data={"project_id": project_id, "name": "HomeLab Ansible", "git_url": "/home/semaphore/ansible", "git_branch": "master", "ssh_key_id": key_id}, headers=headers)
+        repo_id = repo["id"]
+
+        # 5. Views Setup
+        print("Setting up Views...")
+        existing_views = api_call(f"/project/{project_id}/views", headers=headers) or []
+        view_map = {}
+        for view_title in VIEWS:
+            view = next((v for v in existing_views if v["title"] == view_title), None)
+            if not view:
+                print(f"Creating View: {view_title}")
+                view = api_call(f"/project/{project_id}/views", method="POST", data={"project_id": project_id, "title": view_title, "position": VIEWS.index(view_title)}, headers=headers)
+            view_map[view_title] = view["id"]
+
+        # 6. Environments Setup
+        inventories = api_call(f"/project/{project_id}/inventory", headers=headers) or []
+        env_vars_list = api_call(f"/project/{project_id}/environment", headers=headers) or []
+
+        print(f"Found playbooks at: {playbook_root}")
+        
+        categories = {
+            "setup": "Setup",
+            "restart": "Restart",
+            "other": "Backup",
+            "deploy": "Deploy",
+            "build": "Build"
+        }
+
         # Inventory
         inv_name = f"HomeLab {env_title} Inventory"
         inventory = next((i for i in inventories if i["name"] == inv_name), None)
@@ -277,8 +306,7 @@ def main():
         inventory_id = inventory["id"]
 
         # Environment (Extra Vars)
-        # SEMA_TIP: Environments in Semaphore ARE effectively Variable Groups.
-        env_vars = next((e for e in envs if e["name"] == env_title), None)
+        env_vars = next((e for e in env_vars_list if e["name"] == env_title), None)
         env_data = {"project_id": project_id, "name": env_title, "json": "{}", "env": "{}"}
         if not env_vars:
             env_vars = api_call(f"/project/{project_id}/environment", method="POST", data=env_data, headers=headers)
@@ -292,7 +320,7 @@ def main():
         for cat_dir, cat_label in categories.items():
             path = os.path.join(playbook_root, cat_dir)
             if not os.path.exists(path):
-                print(f"  - Category folder not found: {path}")
+                # We still want to see the view even if no playbooks yet
                 continue
             
             pb_files = glob.glob(os.path.join(path, "*.yml")) + glob.glob(os.path.join(path, "*.yaml"))
@@ -303,12 +331,12 @@ def main():
                 print(f"    - Processing: {pb_name}")
                 pb_title = os.path.splitext(pb_name)[0].replace("_", " ").capitalize()
                 
-                # Full Template Name: [Env] Category - Service
-                # e.g. [Production] Setup - Docker
-                template_name = f"[{env_title}] {cat_label} - {pb_title}"
+                template_name = f"{cat_label} {pb_title}"
                 playbook_rel_path = f"playbooks/{cat_dir}/{pb_name}"
                 
                 tag = cat_dir if cat_dir != "other" else "backup"
+                view_id = view_map.get(cat_dir)
+                
                 template_id = create_task_template(
                     project_id=project_id,
                     name=template_name,
@@ -319,6 +347,7 @@ def main():
                     key_id=key_id,
                     vault_key_id=vault_key_id,
                     tag=tag,
+                    view_id=view_id,
                     headers=headers
                 )
 
