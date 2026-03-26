@@ -1,0 +1,5 @@
+- name: Setup Observability
+  hosts: control_nodes
+  become: yes
+  roles:
+    - role: observability_setup

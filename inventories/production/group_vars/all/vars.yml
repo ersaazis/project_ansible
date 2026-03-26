@@ -1,5 +1,9 @@
 timezone: "Asia/Jakarta"
 
+# SSH Key Configuration
+# Note: Run playbooks/common/extract-ssh-key.yml before other playbooks to extract keys to this path
+ansible_ssh_private_key_file: "/tmp/ssh_key_{{ inventory_hostname }}.pem"
+
 # Domain Configuration
 domain_name: "kavanix.com"
 certbot_admin_email: "eam24maret@gmail.com"

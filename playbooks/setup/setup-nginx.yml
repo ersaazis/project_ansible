@@ -1,5 +1,5 @@
 - name: Setup Nginx
-  hosts: app_servers
+  hosts: app_servers,control_nodes
   become: yes
   roles:
     - role: certbot_install

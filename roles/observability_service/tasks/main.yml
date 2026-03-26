@@ -1,0 +1,13 @@
+- name: Restart Observability services
+  command:
+    cmd: "docker compose restart"
+    chdir: "{{ ansible_env.HOME }}/project_observability"
+  tags: [restart]
+  when: "'restart' in ansible_run_tags"
+
+- name: Stop Observability services
+  command:
+    cmd: "docker compose stop"
+    chdir: "{{ ansible_env.HOME }}/project_observability"
+  tags: [stop]
+  when: "'stop' in ansible_run_tags"
