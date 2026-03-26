@@ -1,5 +1,5 @@
 - name: Service Nginx
-  hosts: all
+  hosts: app_servers,control_nodes
   become: yes
   roles:
     - role: nginx_service
