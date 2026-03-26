@@ -27,7 +27,7 @@ DEFAULT_SCHEDULES = {
     "backup-postgres.yml": "0 3 * * *", # Daily at 3 AM
 }
 
-VIEWS = ["setup", "service", "configure", "other", "build", "deploy"]
+VIEWS = ["common", "setup", "service", "configure", "other", "build", "deploy"]
 
 def api_call(path, method="GET", data=None, headers=None):
     if headers is None:
@@ -287,6 +287,7 @@ def main():
         print(f"Found playbooks at: {playbook_root}")
         
         categories = {
+            "common": "Common",
             "setup": "Setup",
             "service": "Service",
             "configure": "Configure",
