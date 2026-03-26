@@ -3,6 +3,7 @@
 
 # Do not ignore templates
 !.env.*.example
+!.env.*.j2
 
 # Common ignores
 *.yml.temp
