@@ -1,0 +1,24 @@
+- name: Create Certbot secrets directory
+  file:
+    path: /root/.secrets/certbot
+    state: directory
+    mode: '0700'
+
+- name: Template Cloudflare API credentials
+  template:
+    src: cloudflare.ini.j2
+    dest: /root/.secrets/certbot/cloudflare.ini
+    mode: '0600'
+
+- name: Request SSL certificates via Cloudflare DNS challenge
+  command: >
+    certbot certonly --dns-cloudflare
+    --dns-cloudflare-credentials /root/.secrets/certbot/cloudflare.ini
+    -d "*.{{ domain_name }}"
+    -d "{{ domain_name }}"
+    --non-interactive
+    --agree-tos
+    -m "{{ certbot_admin_email }}"
+  register: certbot_output
+  changed_when: "'Certificate not yet due for renewal' not in certbot_output.stdout"
+  when: domain_name is defined and certbot_admin_email is defined

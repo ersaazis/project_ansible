@@ -1,5 +1,9 @@
 timezone: "Asia/Jakarta"
 
+# Domain Configuration
+domain_name: "kavanix.com"
+certbot_admin_email: "eam24maret@gmail.com"
+
 # Alloy Configuration
 MIMIR_URL: "http://host.docker.internal/mimir/api/v1/push"
 LOKI_URL: "http://host.docker.internal/loki/api/v1/push"

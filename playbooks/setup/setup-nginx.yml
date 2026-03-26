@@ -2,5 +2,7 @@
   hosts: app_servers
   become: yes
   roles:
+    - role: certbot_install
+    - role: certbot_config
     - role: nginx_install
     - role: nginx_service
