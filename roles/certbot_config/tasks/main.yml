@@ -22,3 +22,10 @@
   register: certbot_output
   changed_when: "'Certificate not yet due for renewal' not in certbot_output.stdout"
   when: domain_name is defined and certbot_admin_email is defined
+- name: Add Certbot renewal cron job
+  cron:
+    name: "Certbot Automatic Renewal"
+    job: 'certbot renew --post-hook "systemctl reload nginx" > /dev/null 2>&1'
+    minute: "0"
+    hour: "3,15"
+    user: root

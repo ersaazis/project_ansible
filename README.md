@@ -9,7 +9,14 @@
 
 ---
 
-This repository contains the Ansible playbooks and inventory for managing the HomeLab infrastructure across multiple environments. The architecture is designed to be highly modular and automated, specifically built to integrate seamlessly with an Ansible Semaphore UI.
+This repository contains the Ansible playbooks and inventory for managing the HomeLab infrastructure across multiple environments. The architecture is highly modular and integrated with **Ansible Semaphore UI** and **Cloudflare DNS** for automated SSL management.
+
+## Key Features
+
+- **Automated SSL**: Wildcard certificates via Certbot with Cloudflare DNS challenge.
+- **SSH Key Management**: Private keys are extracted from Ansible Vault to `/tmp/` before execution for secure, multi-environment access.
+- **Semaphore Integration**: Automated provisioning of views, task templates, and schedules.
+- **Observability**: Built-in roles for Grafana and monitoring stack deployment.
 
 ## Directory Structure
 
@@ -25,9 +32,10 @@ This repository contains the Ansible playbooks and inventory for managing the Ho
     - `*_config`: Role for configuration and templating.
     - `*_backup`: Role for database backup logic (MySQL/Postgres).
 - `playbooks/`: Organized logic divided into explicit execution categories.
-    - `setup/`: Initial provisioning and configuration (e.g., `setup-docker.yml`).
-    - `service/`: Service management using tags (e.g., `service-mysql.yml`).
-    - `configure/`: Configuration tuning (e.g., `config-postgres.yml`).
+    - `common/`: Shared tasks like SSH key extraction (`extract-ssh-key.yml`).
+    - `setup/`: Initial provisioning and configuration (e.g., `setup-docker.yml`, `setup-semaphore.yml`, `setup-observability.yml`).
+    - `service/`: Service management using tags (e.g., `service-nginx.yml`).
+    - `configure/`: Configuration tuning (e.g., `config-mysql.yml`).
     - `other/`: Auxiliary operations like Database Backups (e.g., `backup-mysql.yml`).
 - `provision/`: Contains `provision-semaphore.py` for automated Semaphore UI configuration.
 
