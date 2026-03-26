@@ -6,7 +6,7 @@
 
 - name: Template Cloudflare API credentials
   template:
-    src: cloudflare.ini.j2
+    src: "{{ role_path }}/templates/cloudflare.ini.j2"
     dest: /root/.secrets/certbot/cloudflare.ini
     mode: '0600'
 

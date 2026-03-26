@@ -18,13 +18,13 @@
 
 - name: Template .env.semaphore
   template:
-    src: .env.semaphore.j2
+    src: "{{ role_path }}/templates/.env.semaphore.j2"
     dest: "{{ ansible_env.HOME }}/project_ansible/.env.semaphore"
     mode: '0600'
 
 - name: Template .env.vault
   template:
-    src: .env.vault.j2
+    src: "{{ role_path }}/templates/.env.vault.j2"
     dest: "{{ ansible_env.HOME }}/project_ansible/.env.vault"
     mode: '0600'
 

@@ -33,7 +33,7 @@
 
 - name: Configure Alloy
   template:
-    src: alloy-config.j2
+    src: "{{ role_path }}/templates/alloy-config.j2"
     dest: /etc/alloy/config.alloy
     mode: '0644'
   notify: restart alloy

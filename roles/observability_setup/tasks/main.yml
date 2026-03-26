@@ -18,7 +18,7 @@
 
 - name: Template .env.grafana
   template:
-    src: .env.grafana.j2
+    src: "{{ role_path }}/templates/.env.grafana.j2"
     dest: "{{ ansible_env.HOME }}/project_observability/.env.grafana"
     mode: '0600'
 

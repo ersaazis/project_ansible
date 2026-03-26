@@ -9,6 +9,7 @@ domain_name: "kavanix.com"
 certbot_admin_email: "eam24maret@gmail.com"
 
 # Alloy Configuration
-MIMIR_URL: "http://host.docker.internal/mimir/api/v1/push"
-LOKI_URL: "http://host.docker.internal/loki/api/v1/push"
-TEMPO_URL: "http://host.docker.internal/tempo"
+MIMIR_URL: "http://10.11.1.97:9009/mimir/api/v1/push"
+LOKI_URL: "http://10.11.1.97:3100/loki/api/v1/push"
+TEMPO_URL: "http://10.11.1.97:4318/tempo"
+# PYROSCOPE_URL: "http://10.11.1.97:4040"

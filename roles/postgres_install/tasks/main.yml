@@ -6,6 +6,11 @@
       - python3-psycopg2
     state: present
     update_cache: yes
+    cache_valid_time: 3600
+  register: apt_res
+  until: apt_res is success
+  retries: 5
+  delay: 10
 
 - name: Start PostgreSQL service
   systemd:
