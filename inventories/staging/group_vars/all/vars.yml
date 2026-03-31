@@ -1,6 +1,7 @@
 timezone: "Asia/Jakarta"
 
 # Alloy Configuration
-MIMIR_URL: "http://host.docker.internal/mimir/api/v1/push"
-LOKI_URL: "http://host.docker.internal/loki/api/v1/push"
-TEMPO_URL: "http://host.docker.internal/tempo"
+MIMIR_URL: "http://10.11.1.191:9009/api/v1/push"
+LOKI_URL: "http://10.11.1.191:3100/loki/api/v1/push"
+TEMPO_URL: "http://10.11.1.191:4319"
+# PYROSCOPE_URL: "http://10.11.1.191:4040/ingest"
