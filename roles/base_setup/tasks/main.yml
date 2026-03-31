@@ -1,0 +1,12 @@
+- name: Set hostname
+  hostname:
+    name: "{{ inventory_hostname }}"
+  become: true
+
+- name: Update /etc/hosts with new hostname
+  lineinfile:
+    path: /etc/hosts
+    regexp: '^127\.0\.1\.1'
+    line: "127.0.1.1 {{ inventory_hostname }}"
+    state: present
+  become: true

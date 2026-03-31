@@ -1,0 +1,5 @@
+- name: Setup Base Hostname
+  hosts: all
+  become: true
+  roles:
+    - base_setup
