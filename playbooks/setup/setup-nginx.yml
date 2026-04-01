@@ -5,4 +5,5 @@
     - role: certbot_install
     - role: certbot_config
     - role: nginx_install
+    - role: nginx_config
     - role: nginx_service
