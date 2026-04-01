@@ -1,4 +1,4 @@
-﻿// BLACKBOX ERP
+// BLACKBOX ERP
 prometheus.exporter.blackbox "uptime_check_prod" {
   config_file = "/ops/alloy-service/blackbox/blackbox_modules.yml"
 
