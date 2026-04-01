@@ -97,7 +97,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
   // ======================
   target {
     name = "Database_PostgreSQL_Control"
-    address = "10.11.1.41:5432"
+    address = "127.0.0.1:5432"
     module  = "postgresql"
     labels = {
       "name" = "ERP | DB PGSQL Control",
@@ -202,7 +202,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
   // ======================
   target {
     name = "Database_PostgreSQL_Control"
-    address = "10.11.1.41:5432"
+    address = "127.0.0.1:5432"
     module  = "postgresql"
     labels = {
       "name" = "ERP | DB PGSQL Control",
@@ -307,7 +307,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
   // ======================
   target {
     name = "Database_PostgreSQL_Control"
-    address = "10.11.1.41:5432"
+    address = "127.0.0.1:5432"
     module  = "postgresql"
     labels = {
       "name" = "ERP | DB PGSQL Control",
@@ -412,7 +412,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
   // ======================
   target {
     name = "Database_PostgreSQL_Control"
-    address = "10.11.1.41:5432"
+    address = "127.0.0.1:5432"
     module  = "postgresql"
     labels = {
       "name" = "ERP | DB PGSQL Control",
