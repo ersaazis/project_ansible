@@ -22,7 +22,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
   // ======================
   target {
     name = "ERP_Semaphore"
-    address = "https://semaphore.kavanix.com/api/health"
+    address = "https://semaphore.kavanix.com"
     module  = "http_2xx"
     labels = {
       "name" = "ERP | Monitoring Semaphore",
@@ -127,7 +127,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
   // ======================
   target {
     name = "ERP_Semaphore"
-    address = "https://semaphore.kavanix.com/api/health"
+    address = "https://semaphore.kavanix.com"
     module  = "http_2xx"
     labels = {
       "name" = "ERP | Monitoring Semaphore",
@@ -232,7 +232,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
   // ======================
   target {
     name = "ERP_Semaphore"
-    address = "https://semaphore.kavanix.com/api/health"
+    address = "https://semaphore.kavanix.com"
     module  = "http_2xx"
     labels = {
       "name" = "ERP | Monitoring Semaphore",
@@ -337,7 +337,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
   // ======================
   target {
     name = "ERP_Semaphore"
-    address = "https://semaphore.kavanix.com/api/health"
+    address = "https://semaphore.kavanix.com"
     module  = "http_2xx"
     labels = {
       "name" = "ERP | Monitoring Semaphore",
