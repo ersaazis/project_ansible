@@ -1,0 +1,123 @@
+﻿// BLACKBOX ERP
+prometheus.exporter.blackbox "uptime_check_prod" {
+  config_file = "/ops/alloy-service/blackbox/blackbox_modules.yml"
+
+  // ======================
+  // Service Grafana
+  // ======================
+  target {
+    name = "ERP_Grafana"
+    address = "https://grafana.kavanix.com/api/health"
+    module  = "http_2xx"
+    labels = {
+      "name" = "ERP | Monitoring Grafana",
+      "job" = "integrations/blackbox",
+      "env" = "production",
+      "group" = "Monitoring"
+    }
+  }
+
+  // ======================
+  // Service Semaphore
+  // ======================
+  target {
+    name = "ERP_Semaphore"
+    address = "https://semaphore.kavanix.com/api/health"
+    module  = "http_2xx"
+    labels = {
+      "name" = "ERP | Monitoring Semaphore",
+      "job" = "integrations/blackbox",
+      "env" = "production",
+      "group" = "Internal Ops"
+    }
+  }
+
+  // ======================
+  // Ping IP Control
+  // ======================
+  target {
+    name = "Server_Ping_Control"
+    address = "10.11.1.41"
+    module  = "icmp"
+    labels = {
+      "name" = "ERP | Server Ping Control",
+      "job" = "integrations/blackbox",
+      "env" = "production",
+      "group" = "Server Connectivity"
+    }
+  }
+
+  // ======================
+  // Ping IP App
+  // ======================
+  target {
+    name = "Server_Ping_App"
+    address = "10.21.1.229"
+    module  = "icmp"
+    labels = {
+      "name" = "ERP | Server Ping App",
+      "job" = "integrations/blackbox",
+      "env" = "production",
+      "group" = "Server Connectivity"
+    }
+  }
+
+  // ======================
+  // Ping IP DB
+  // ======================
+  target {
+    name = "Server_Ping_DB"
+    address = "10.31.1.76"
+    module  = "icmp"
+    labels = {
+      "name" = "ERP | Server Ping DB",
+      "job" = "integrations/blackbox",
+      "env" = "production",
+      "group" = "Server Connectivity"
+    }
+  }
+
+  // ======================
+  // Database MySQL db-node
+  // ======================
+  target {
+    name = "Database_MySQL_Prod"
+    address = "10.31.1.76:3306"
+    module  = "tcp_connect"
+    labels = {
+      "name" = "ERP | DB MySQL Prod",
+      "job" = "integrations/blackbox",
+      "env" = "production",
+      "group" = "Database Connectivity"
+    }
+  }
+
+  // ======================
+  // Database PostgreSQL db-node
+  // ======================
+  target {
+    name = "Database_PostgreSQL_Control"
+    address = "10.11.1.41:5432"
+    module  = "postgresql"
+    labels = {
+      "name" = "ERP | DB PGSQL Control",
+      "job" = "integrations/blackbox",
+      "env" = "production",
+      "group" = "Database Connectivity"
+    }
+  }
+
+}
+discovery.relabel "uptime_check_prod" {
+  targets = prometheus.exporter.blackbox.uptime_check_prod.targets
+
+  rule {
+    source_labels = ["__param_target"]
+    target_label = "instance"
+  }
+}
+prometheus.scrape "uptime_check_prod" {
+  targets         = discovery.relabel.uptime_check_prod.output
+  forward_to      = [prometheus.remote_write.mimir.receiver]
+  scrape_interval = "1m"
+}

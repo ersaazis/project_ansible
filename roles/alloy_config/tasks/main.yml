@@ -31,6 +31,37 @@
     - restart alloy
   when: enable_monitoring | default(false)
 
+- name: Check for host-specific blackbox module configuration
+  delegate_to: localhost
+  become: no
+  stat:
+    path: "{{ inventory_dir }}/host_files/{{ inventory_hostname }}/blackbox/blackbox_modules.yml"
+  register: blackbox_modules_stat
+  when: enable_monitoring | default(false)
+
+- name: Create blackbox config directory
+  file:
+    path: /ops/alloy-service/blackbox
+    state: directory
+    mode: '0755'
+  when: enable_monitoring | default(false) and blackbox_modules_stat.stat.exists
+
+- name: Copy blackbox module configuration
+  copy:
+    src: "{{ inventory_dir }}/host_files/{{ inventory_hostname }}/blackbox/blackbox_modules.yml"
+    dest: /ops/alloy-service/blackbox/blackbox_modules.yml
+    mode: '0644'
+  when: enable_monitoring | default(false) and blackbox_modules_stat.stat.exists
+  notify: restart alloy
+
+- name: Check for host-specific blackbox alloy fragment
+  delegate_to: localhost
+  become: no
+  stat:
+    path: "{{ inventory_dir }}/host_files/{{ inventory_hostname }}/blackbox/blackbox.alloy"
+  register: blackbox_alloy_stat
+  when: enable_monitoring | default(false)
+
 - name: Configure Alloy
   template:
     src: "{{ role_path }}/templates/alloy-config.j2"

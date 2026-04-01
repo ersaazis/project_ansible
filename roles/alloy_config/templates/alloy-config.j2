@@ -30,3 +30,8 @@
 // --- nginx.alloy ---
 {% include 'fragment/' ~ env ~ '/nginx.alloy' %}
 {% endif %}
+
+{% if blackbox_alloy_stat.stat.exists %}
+// --- host-specific blackbox.alloy ---
+{{ lookup('file', inventory_dir ~ '/host_files/' ~ inventory_hostname ~ '/blackbox/blackbox.alloy') }}
+{% endif %}
