@@ -13,7 +13,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
       "name" = "ERP | Monitoring Grafana",
       "job" = "integrations/blackbox",
       "env" = "production",
-      "group" = "Monitoring"
+      "group" = "Monitoring",
     }
   }
 
@@ -28,7 +28,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
       "name" = "ERP | Monitoring Semaphore",
       "job" = "integrations/blackbox",
       "env" = "production",
-      "group" = "Internal Ops"
+      "group" = "Internal Ops",
     }
   }
 
@@ -43,7 +43,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
       "name" = "ERP | Server Ping Control",
       "job" = "integrations/blackbox",
       "env" = "production",
-      "group" = "Server Connectivity"
+      "group" = "Server Connectivity",
     }
   }
 
@@ -58,7 +58,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
       "name" = "ERP | Server Ping App",
       "job" = "integrations/blackbox",
       "env" = "production",
-      "group" = "Server Connectivity"
+      "group" = "Server Connectivity",
     }
   }
 
@@ -73,7 +73,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
       "name" = "ERP | Server Ping DB",
       "job" = "integrations/blackbox",
       "env" = "production",
-      "group" = "Server Connectivity"
+      "group" = "Server Connectivity",
     }
   }
 
@@ -88,7 +88,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
       "name" = "ERP | DB MySQL Prod",
       "job" = "integrations/blackbox",
       "env" = "production",
-      "group" = "Database Connectivity"
+      "group" = "Database Connectivity",
     }
   }
 
@@ -103,7 +103,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
       "name" = "ERP | DB PGSQL Control",
       "job" = "integrations/blackbox",
       "env" = "production",
-      "group" = "Database Connectivity"
+      "group" = "Database Connectivity",
     }
   }
 
