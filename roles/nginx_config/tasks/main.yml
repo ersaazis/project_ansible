@@ -19,12 +19,12 @@
 - name: Check if host-specific site configuration exists
   delegate_to: localhost
   stat:
-    path: "{{ inventory_dir }}/host_vars/{{ inventory_hostname }}/nginx/default"
+    path: "{{ inventory_dir }}/host_files/{{ inventory_hostname }}/nginx/default"
   register: host_site_config
 
 - name: Copy host-specific site configuration
   copy:
-    src: "{{ inventory_dir }}/host_vars/{{ inventory_hostname }}/nginx/default"
+    src: "{{ inventory_dir }}/host_files/{{ inventory_hostname }}/nginx/default"
     dest: /etc/nginx/sites-available/default
     owner: root
     group: root
