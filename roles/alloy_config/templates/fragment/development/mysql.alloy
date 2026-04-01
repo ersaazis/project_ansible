@@ -3,7 +3,19 @@
 // ==========================================================
 
 prometheus.exporter.mysql "integrations_mysql_exporter" {
-  data_source_name = "root:{{ mysql_root_password }}@(localhost:3306)/"
+  data_source_name = "root:{{ mysql_root_password }}@(127.0.0.1:3306)/"
+  enable_collectors = [
+    "global_status",
+    "global_variables",
+    "info_schema.innodb_metrics",
+    "info_schema.processlist",
+    "info_schema.query_response_time",
+    "info_schema.tables",
+    "perf_schema.eventsstatements",
+    "perf_schema.indexiowaits",
+    "perf_schema.tableiowaits",
+    "slave_status",
+  ]
 }
 
 discovery.relabel "integrations_mysql_exporter" {
