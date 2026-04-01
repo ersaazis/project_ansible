@@ -2,10 +2,10 @@
 enable_monitoring: false
 
 # Centralized Endpoints (Default/Placeholder)
-MIMIR_URL: "http://10.11.1.191:9009/api/v1/push"
-LOKI_URL: "http://10.11.1.191:3100/loki/api/v1/push"
-TEMPO_URL: "http://10.11.1.191:4319"
-# PYROSCOPE_URL: "http://10.11.1.191:4040/ingest"
+MIMIR_URL: "http://10.11.1.41:9009/api/v1/push"
+LOKI_URL: "http://10.11.1.41:3100/loki/api/v1/push"
+TEMPO_URL: "http://10.11.1.41:4319"
+# PYROSCOPE_URL: "http://10.11.1.41:4040/ingest"
 
 # Authentication (Default/Placeholder)
 ALLOY_DATASOURCE_USER: "admin"
