@@ -3,7 +3,7 @@
 // ==========================================================
 
 prometheus.exporter.mysql "integrations_mysql_exporter" {
-  data_source_name = "root:password@(localhost:3306)/"
+  data_source_name = "root:{{ mysql_root_password }}@(localhost:3306)/"
 }
 
 discovery.relabel "integrations_mysql_exporter" {

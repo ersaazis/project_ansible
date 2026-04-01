@@ -3,7 +3,7 @@
 // ==========================================================
 
 prometheus.exporter.postgres "integrations_postgres_exporter" {
-  data_source_names = ["postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable"]
+  data_source_names = ["postgresql://postgres:{{ postgres_password }}@localhost:5432/postgres?sslmode=disable"]
 }
 
 discovery.relabel "integrations_postgres_exporter" {
