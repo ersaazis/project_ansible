@@ -18,6 +18,7 @@
 
 - name: Check if host-specific site configuration exists
   delegate_to: localhost
+  become: no
   stat:
     path: "{{ inventory_dir }}/host_files/{{ inventory_hostname }}/nginx/default"
   register: host_site_config
