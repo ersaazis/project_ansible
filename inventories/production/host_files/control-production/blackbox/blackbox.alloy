@@ -13,7 +13,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
       "name" = "ERP | Monitoring Grafana",
       "job" = "integrations/blackbox",
       "env" = "Production",
-      "group" = "Monitoring",
+      "group" = "Internal Ops",
     }
   }
 
@@ -118,7 +118,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
       "name" = "ERP | Monitoring Grafana",
       "job" = "integrations/blackbox",
       "env" = "Mirror",
-      "group" = "Monitoring",
+      "group" = "Internal Ops",
     }
   }
 
@@ -223,7 +223,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
       "name" = "ERP | Monitoring Grafana",
       "job" = "integrations/blackbox",
       "env" = "Staging",
-      "group" = "Monitoring",
+      "group" = "Internal Ops",
     }
   }
 
@@ -328,7 +328,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
       "name" = "ERP | Monitoring Grafana",
       "job" = "integrations/blackbox",
       "env" = "Development",
-      "group" = "Monitoring",
+      "group" = "Internal Ops",
     }
   }
 
