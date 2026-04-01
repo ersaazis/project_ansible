@@ -1,0 +1,61 @@
+    server {
+        listen 80;
+        server_name grafana.kavanix.com semaphore.kavanix.com;
+        
+        location /.well-known/acme-challenge/ {
+            root /var/www/certbot;
+        }
+        location / {
+            return 301 https://$host$request_uri;
+        }
+    }
+
+    # grafana.kavanix.com
+    server {
+        listen 443 ssl;
+        server_name grafana.kavanix.com;
+        access_log /var/log/nginx/grafana.kavanix.com.access.log json_analytics;
+        error_log /var/log/nginx/grafana.kavanix.com.error.log;
+
+        ssl_certificate     /etc/letsencrypt/live/kavanix.com/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/kavanix.com/privkey.pem;
+
+        ssl_protocols       TLSv1.2 TLSv1.3;
+        ssl_session_cache   shared:SSL:10m;
+        ssl_session_timeout 10m;
+        ssl_ciphers         HIGH:!aNULL:!MD5;
+        ssl_prefer_server_ciphers on;
+
+        location / {
+            proxy_pass http://localhost:3000;
+            proxy_set_header Host $http_host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    }
+
+    # semaphore.kavanix.com
+    server {
+        listen 443 ssl;
+        server_name semaphore.kavanix.com;
+        access_log /var/log/nginx/semaphore.kavanix.com.access.log json_analytics;
+        error_log /var/log/nginx/semaphore.kavanix.com.error.log;
+        
+        ssl_certificate     /etc/letsencrypt/live/kavanix.com/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/kavanix.com/privkey.pem;
+
+        ssl_protocols       TLSv1.2 TLSv1.3;
+        ssl_session_cache   shared:SSL:10m;
+        ssl_session_timeout 10m;
+        ssl_ciphers         HIGH:!aNULL:!MD5;
+        ssl_prefer_server_ciphers on;
+
+        location / {
+            proxy_pass http://localhost:3001;
+            proxy_set_header Host $http_host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    }
