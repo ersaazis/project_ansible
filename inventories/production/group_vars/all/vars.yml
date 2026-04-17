@@ -9,7 +9,7 @@ domain_name: "kavanix.com"
 certbot_admin_email: "eam24maret@gmail.com"
 
 # Alloy Configuration
-MIMIR_URL: "http://10.11.1.73:9009/api/v1/push"
-LOKI_URL: "http://10.11.1.73:3100/loki/api/v1/push"
-TEMPO_URL: "http://10.11.1.73:4319"
-# PYROSCOPE_URL: "http://10.11.1.73:4040/ingest"
+MIMIR_URL: "http://10.11.1.68:9009/api/v1/push"
+LOKI_URL: "http://10.11.1.68:3100/loki/api/v1/push"
+TEMPO_URL: "http://10.11.1.68:4319"
+# PYROSCOPE_URL: "http://10.11.1.68:4040/ingest"

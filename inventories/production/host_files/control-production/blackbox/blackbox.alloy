@@ -37,7 +37,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
   // ======================
   target {
     name = "Server_Ping_Control"
-    address = "10.11.1.73"
+    address = "10.11.1.68"
     module  = "icmp"
     labels = {
       "name" = "ERP | Server Ping Control",
@@ -52,7 +52,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
   // ======================
   target {
     name = "Server_Ping_App"
-    address = "10.21.1.171"
+    address = "10.21.1.233"
     module  = "icmp"
     labels = {
       "name" = "ERP | Server Ping App",
@@ -67,7 +67,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
   // ======================
   target {
     name = "Server_Ping_DB"
-    address = "10.31.1.148"
+    address = "10.31.1.92"
     module  = "icmp"
     labels = {
       "name" = "ERP | Server Ping DB",
@@ -109,7 +109,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
   // ======================
   target {
     name = "Database_MySQL_Prod"
-    address = "10.31.1.148:3306"
+    address = "10.31.1.92:3306"
     module  = "tcp_connect"
     labels = {
       "name" = "ERP | DB MySQL Prod",
@@ -169,7 +169,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
   // // ======================
   // target {
   //   name = "Server_Ping_Control"
-  //   address = "10.11.1.73"
+  //   address = "10.11.1.68"
   //   module  = "icmp"
   //   labels = {
   //     "name" = "ERP | Server Ping Control",
@@ -184,7 +184,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
   // // ======================
   // target {
   //   name = "Server_Ping_App"
-  //   address = "10.21.1.171"
+  //   address = "10.21.1.233"
   //   module  = "icmp"
   //   labels = {
   //     "name" = "ERP | Server Ping App",
@@ -199,7 +199,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
   // // ======================
   // target {
   //   name = "Server_Ping_DB"
-  //   address = "10.31.1.148"
+  //   address = "10.31.1.92"
   //   module  = "icmp"
   //   labels = {
   //     "name" = "ERP | Server Ping DB",
@@ -214,7 +214,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
   // // ======================
   // target {
   //   name = "Database_MySQL_Prod"
-  //   address = "10.31.1.148:3306"
+  //   address = "10.31.1.92:3306"
   //   module  = "tcp_connect"
   //   labels = {
   //     "name" = "ERP | DB MySQL Prod",
@@ -274,7 +274,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
   // // ======================
   // target {
   //   name = "Server_Ping_Control"
-  //   address = "10.11.1.73"
+  //   address = "10.11.1.68"
   //   module  = "icmp"
   //   labels = {
   //     "name" = "ERP | Server Ping Control",
@@ -289,7 +289,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
   // // ======================
   // target {
   //   name = "Server_Ping_App"
-  //   address = "10.21.1.171"
+  //   address = "10.21.1.233"
   //   module  = "icmp"
   //   labels = {
   //     "name" = "ERP | Server Ping App",
@@ -304,7 +304,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
   // // ======================
   // target {
   //   name = "Server_Ping_DB"
-  //   address = "10.31.1.148"
+  //   address = "10.31.1.92"
   //   module  = "icmp"
   //   labels = {
   //     "name" = "ERP | Server Ping DB",
@@ -319,7 +319,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
   // // ======================
   // target {
   //   name = "Database_MySQL_Prod"
-  //   address = "10.31.1.148:3306"
+  //   address = "10.31.1.92:3306"
   //   module  = "tcp_connect"
   //   labels = {
   //     "name" = "ERP | DB MySQL Prod",
@@ -379,7 +379,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
   // // ======================
   // target {
   //   name = "Server_Ping_Control"
-  //   address = "10.11.1.73"
+  //   address = "10.11.1.68"
   //   module  = "icmp"
   //   labels = {
   //     "name" = "ERP | Server Ping Control",
@@ -394,7 +394,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
   // // ======================
   // target {
   //   name = "Server_Ping_App"
-  //   address = "10.21.1.171"
+  //   address = "10.21.1.233"
   //   module  = "icmp"
   //   labels = {
   //     "name" = "ERP | Server Ping App",
@@ -409,7 +409,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
   // // ======================
   // target {
   //   name = "Server_Ping_DB"
-  //   address = "10.31.1.148"
+  //   address = "10.31.1.92"
   //   module  = "icmp"
   //   labels = {
   //     "name" = "ERP | Server Ping DB",
@@ -424,7 +424,7 @@ prometheus.exporter.blackbox "uptime_check_prod" {
   // // ======================
   // target {
   //   name = "Database_MySQL_Prod"
-  //   address = "10.31.1.148:3306"
+  //   address = "10.31.1.92:3306"
   //   module  = "tcp_connect"
   //   labels = {
   //     "name" = "ERP | DB MySQL Prod",
