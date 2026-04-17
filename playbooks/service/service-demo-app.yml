@@ -1,0 +1,24 @@
+- name: Demo App Service
+  hosts: prod-app
+  become: yes
+  tasks:
+    - name: Start Demo App services
+      command:
+        cmd: "docker compose up -d"
+        chdir: "{{ ansible_env.HOME }}/app-demo"
+      tags: [start]
+      when: "'restart' not in ansible_run_tags and 'stop' not in ansible_run_tags"
+
+    - name: Restart Demo App services
+      command:
+        cmd: "docker compose restart"
+        chdir: "{{ ansible_env.HOME }}/app-demo"
+      tags: [restart]
+      when: "'restart' in ansible_run_tags"
+
+    - name: Stop Demo App services
+      command:
+        cmd: "docker compose stop"
+        chdir: "{{ ansible_env.HOME }}/app-demo"
+      tags: [stop]
+      when: "'stop' in ansible_run_tags"

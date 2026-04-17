@@ -1,0 +1,28 @@
+- name: Setup Demo Application
+  hosts: prod-app
+  become: yes
+  tasks:
+    - name: Install git
+      apt:
+        name: git
+        state: present
+        update_cache: yes
+
+    - name: Create project directory
+      file:
+        path: "{{ ansible_env.HOME }}/app-demo"
+        state: directory
+        mode: '0755'
+
+    - name: Clone app-demo project repository
+      git:
+        repo: "https://github.com/ersaazis/app-demo"
+        dest: "{{ ansible_env.HOME }}/app-demo"
+        force: yes
+
+    - name: Run Docker Compose
+      command:
+        cmd: "docker compose up -d"
+        chdir: "{{ ansible_env.HOME }}/app-demo"
+      register: compose_output
+      changed_when: "'Running' in compose_output.stdout or 'Started' in compose_output.stdout"

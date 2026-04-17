@@ -78,6 +78,33 @@ prometheus.exporter.blackbox "uptime_check_prod" {
   }
 
   // ======================
+  // Service Demo
+  // ======================
+  target {
+    name = "Demo_App_Go"
+    address = "https://app.kavanix.com/go/health"
+    module  = "http_2xx"
+    labels = {
+      "name" = "ERP | Demo App Go",
+      "job" = "integrations/blackbox",
+      "env" = "Production",
+      "group" = "Service Demo",
+    }
+  }
+
+  target {
+    name = "Demo_App_PHP"
+    address = "https://app.kavanix.com/php/health"
+    module  = "http_2xx"
+    labels = {
+      "name" = "ERP | Demo App PHP",
+      "job" = "integrations/blackbox",
+      "env" = "Production",
+      "group" = "Service Demo",
+    }
+  }
+
+  // ======================
   // Database MySQL db-node
   // ======================
   target {

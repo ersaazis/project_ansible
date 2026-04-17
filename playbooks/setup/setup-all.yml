@@ -7,3 +7,4 @@
 - import_playbook: setup-app.yml
 - import_playbook: setup-observability.yml
 - import_playbook: setup-semaphore.yml
+- import_playbook: setup-demo-app.yml
