@@ -107,320 +107,320 @@ prometheus.exporter.blackbox "uptime_check_prod" {
     }
   }
 
-  // ======================
-  // Service Grafana
-  // ======================
-  target {
-    name = "ERP_Grafana"
-    address = "https://grafana.kavanix.com/api/health"
-    module  = "http_2xx"
-    labels = {
-      "name" = "ERP | Monitoring Grafana",
-      "job" = "integrations/blackbox",
-      "env" = "Mirror",
-      "group" = "Internal Ops",
-    }
-  }
+  // // ======================
+  // // Service Grafana
+  // // ======================
+  // target {
+  //   name = "ERP_Grafana"
+  //   address = "https://grafana.kavanix.com/api/health"
+  //   module  = "http_2xx"
+  //   labels = {
+  //     "name" = "ERP | Monitoring Grafana",
+  //     "job" = "integrations/blackbox",
+  //     "env" = "Mirror",
+  //     "group" = "Internal Ops",
+  //   }
+  // }
 
-  // ======================
-  // Service Semaphore
-  // ======================
-  target {
-    name = "ERP_Semaphore"
-    address = "https://semaphore.kavanix.com"
-    module  = "http_2xx"
-    labels = {
-      "name" = "ERP | Monitoring Semaphore",
-      "job" = "integrations/blackbox",
-      "env" = "Mirror",
-      "group" = "Internal Ops",
-    }
-  }
+  // // ======================
+  // // Service Semaphore
+  // // ======================
+  // target {
+  //   name = "ERP_Semaphore"
+  //   address = "https://semaphore.kavanix.com"
+  //   module  = "http_2xx"
+  //   labels = {
+  //     "name" = "ERP | Monitoring Semaphore",
+  //     "job" = "integrations/blackbox",
+  //     "env" = "Mirror",
+  //     "group" = "Internal Ops",
+  //   }
+  // }
 
-  // ======================
-  // Ping IP Control
-  // ======================
-  target {
-    name = "Server_Ping_Control"
-    address = "10.11.1.73"
-    module  = "icmp"
-    labels = {
-      "name" = "ERP | Server Ping Control",
-      "job" = "integrations/blackbox",
-      "env" = "Mirror",
-      "group" = "Server Connectivity",
-    }
-  }
+  // // ======================
+  // // Ping IP Control
+  // // ======================
+  // target {
+  //   name = "Server_Ping_Control"
+  //   address = "10.11.1.73"
+  //   module  = "icmp"
+  //   labels = {
+  //     "name" = "ERP | Server Ping Control",
+  //     "job" = "integrations/blackbox",
+  //     "env" = "Mirror",
+  //     "group" = "Server Connectivity",
+  //   }
+  // }
 
-  // ======================
-  // Ping IP App
-  // ======================
-  target {
-    name = "Server_Ping_App"
-    address = "10.21.1.171"
-    module  = "icmp"
-    labels = {
-      "name" = "ERP | Server Ping App",
-      "job" = "integrations/blackbox",
-      "env" = "Mirror",
-      "group" = "Server Connectivity",
-    }
-  }
+  // // ======================
+  // // Ping IP App
+  // // ======================
+  // target {
+  //   name = "Server_Ping_App"
+  //   address = "10.21.1.171"
+  //   module  = "icmp"
+  //   labels = {
+  //     "name" = "ERP | Server Ping App",
+  //     "job" = "integrations/blackbox",
+  //     "env" = "Mirror",
+  //     "group" = "Server Connectivity",
+  //   }
+  // }
 
-  // ======================
-  // Ping IP DB
-  // ======================
-  target {
-    name = "Server_Ping_DB"
-    address = "10.31.1.148"
-    module  = "icmp"
-    labels = {
-      "name" = "ERP | Server Ping DB",
-      "job" = "integrations/blackbox",
-      "env" = "Mirror",
-      "group" = "Server Connectivity",
-    }
-  }
+  // // ======================
+  // // Ping IP DB
+  // // ======================
+  // target {
+  //   name = "Server_Ping_DB"
+  //   address = "10.31.1.148"
+  //   module  = "icmp"
+  //   labels = {
+  //     "name" = "ERP | Server Ping DB",
+  //     "job" = "integrations/blackbox",
+  //     "env" = "Mirror",
+  //     "group" = "Server Connectivity",
+  //   }
+  // }
 
-  // ======================
-  // Database MySQL db-node
-  // ======================
-  target {
-    name = "Database_MySQL_Prod"
-    address = "10.31.1.148:3306"
-    module  = "tcp_connect"
-    labels = {
-      "name" = "ERP | DB MySQL Prod",
-      "job" = "integrations/blackbox",
-      "env" = "Mirror",
-      "group" = "Database Connectivity",
-    }
-  }
+  // // ======================
+  // // Database MySQL db-node
+  // // ======================
+  // target {
+  //   name = "Database_MySQL_Prod"
+  //   address = "10.31.1.148:3306"
+  //   module  = "tcp_connect"
+  //   labels = {
+  //     "name" = "ERP | DB MySQL Prod",
+  //     "job" = "integrations/blackbox",
+  //     "env" = "Mirror",
+  //     "group" = "Database Connectivity",
+  //   }
+  // }
 
-  // ======================
-  // Database PostgreSQL db-node
-  // ======================
-  target {
-    name = "Database_PostgreSQL_Control"
-    address = "127.0.0.1:5432"
-    module  = "postgresql"
-    labels = {
-      "name" = "ERP | DB PGSQL Control",
-      "job" = "integrations/blackbox",
-      "env" = "Mirror",
-      "group" = "Database Connectivity",
-    }
-  }
+  // // ======================
+  // // Database PostgreSQL db-node
+  // // ======================
+  // target {
+  //   name = "Database_PostgreSQL_Control"
+  //   address = "127.0.0.1:5432"
+  //   module  = "postgresql"
+  //   labels = {
+  //     "name" = "ERP | DB PGSQL Control",
+  //     "job" = "integrations/blackbox",
+  //     "env" = "Mirror",
+  //     "group" = "Database Connectivity",
+  //   }
+  // }
 
-  // ======================
-  // Service Grafana
-  // ======================
-  target {
-    name = "ERP_Grafana"
-    address = "https://grafana.kavanix.com/api/health"
-    module  = "http_2xx"
-    labels = {
-      "name" = "ERP | Monitoring Grafana",
-      "job" = "integrations/blackbox",
-      "env" = "Staging",
-      "group" = "Internal Ops",
-    }
-  }
+  // // ======================
+  // // Service Grafana
+  // // ======================
+  // target {
+  //   name = "ERP_Grafana"
+  //   address = "https://grafana.kavanix.com/api/health"
+  //   module  = "http_2xx"
+  //   labels = {
+  //     "name" = "ERP | Monitoring Grafana",
+  //     "job" = "integrations/blackbox",
+  //     "env" = "Staging",
+  //     "group" = "Internal Ops",
+  //   }
+  // }
 
-  // ======================
-  // Service Semaphore
-  // ======================
-  target {
-    name = "ERP_Semaphore"
-    address = "https://semaphore.kavanix.com"
-    module  = "http_2xx"
-    labels = {
-      "name" = "ERP | Monitoring Semaphore",
-      "job" = "integrations/blackbox",
-      "env" = "Staging",
-      "group" = "Internal Ops",
-    }
-  }
+  // // ======================
+  // // Service Semaphore
+  // // ======================
+  // target {
+  //   name = "ERP_Semaphore"
+  //   address = "https://semaphore.kavanix.com"
+  //   module  = "http_2xx"
+  //   labels = {
+  //     "name" = "ERP | Monitoring Semaphore",
+  //     "job" = "integrations/blackbox",
+  //     "env" = "Staging",
+  //     "group" = "Internal Ops",
+  //   }
+  // }
 
-  // ======================
-  // Ping IP Control
-  // ======================
-  target {
-    name = "Server_Ping_Control"
-    address = "10.11.1.73"
-    module  = "icmp"
-    labels = {
-      "name" = "ERP | Server Ping Control",
-      "job" = "integrations/blackbox",
-      "env" = "Staging",
-      "group" = "Server Connectivity",
-    }
-  }
+  // // ======================
+  // // Ping IP Control
+  // // ======================
+  // target {
+  //   name = "Server_Ping_Control"
+  //   address = "10.11.1.73"
+  //   module  = "icmp"
+  //   labels = {
+  //     "name" = "ERP | Server Ping Control",
+  //     "job" = "integrations/blackbox",
+  //     "env" = "Staging",
+  //     "group" = "Server Connectivity",
+  //   }
+  // }
 
-  // ======================
-  // Ping IP App
-  // ======================
-  target {
-    name = "Server_Ping_App"
-    address = "10.21.1.171"
-    module  = "icmp"
-    labels = {
-      "name" = "ERP | Server Ping App",
-      "job" = "integrations/blackbox",
-      "env" = "Staging",
-      "group" = "Server Connectivity",
-    }
-  }
+  // // ======================
+  // // Ping IP App
+  // // ======================
+  // target {
+  //   name = "Server_Ping_App"
+  //   address = "10.21.1.171"
+  //   module  = "icmp"
+  //   labels = {
+  //     "name" = "ERP | Server Ping App",
+  //     "job" = "integrations/blackbox",
+  //     "env" = "Staging",
+  //     "group" = "Server Connectivity",
+  //   }
+  // }
 
-  // ======================
-  // Ping IP DB
-  // ======================
-  target {
-    name = "Server_Ping_DB"
-    address = "10.31.1.148"
-    module  = "icmp"
-    labels = {
-      "name" = "ERP | Server Ping DB",
-      "job" = "integrations/blackbox",
-      "env" = "Staging",
-      "group" = "Server Connectivity",
-    }
-  }
+  // // ======================
+  // // Ping IP DB
+  // // ======================
+  // target {
+  //   name = "Server_Ping_DB"
+  //   address = "10.31.1.148"
+  //   module  = "icmp"
+  //   labels = {
+  //     "name" = "ERP | Server Ping DB",
+  //     "job" = "integrations/blackbox",
+  //     "env" = "Staging",
+  //     "group" = "Server Connectivity",
+  //   }
+  // }
 
-  // ======================
-  // Database MySQL db-node
-  // ======================
-  target {
-    name = "Database_MySQL_Prod"
-    address = "10.31.1.148:3306"
-    module  = "tcp_connect"
-    labels = {
-      "name" = "ERP | DB MySQL Prod",
-      "job" = "integrations/blackbox",
-      "env" = "Staging",
-      "group" = "Database Connectivity",
-    }
-  }
+  // // ======================
+  // // Database MySQL db-node
+  // // ======================
+  // target {
+  //   name = "Database_MySQL_Prod"
+  //   address = "10.31.1.148:3306"
+  //   module  = "tcp_connect"
+  //   labels = {
+  //     "name" = "ERP | DB MySQL Prod",
+  //     "job" = "integrations/blackbox",
+  //     "env" = "Staging",
+  //     "group" = "Database Connectivity",
+  //   }
+  // }
 
-  // ======================
-  // Database PostgreSQL db-node
-  // ======================
-  target {
-    name = "Database_PostgreSQL_Control"
-    address = "127.0.0.1:5432"
-    module  = "postgresql"
-    labels = {
-      "name" = "ERP | DB PGSQL Control",
-      "job" = "integrations/blackbox",
-      "env" = "Staging",
-      "group" = "Database Connectivity",
-    }
-  }
+  // // ======================
+  // // Database PostgreSQL db-node
+  // // ======================
+  // target {
+  //   name = "Database_PostgreSQL_Control"
+  //   address = "127.0.0.1:5432"
+  //   module  = "postgresql"
+  //   labels = {
+  //     "name" = "ERP | DB PGSQL Control",
+  //     "job" = "integrations/blackbox",
+  //     "env" = "Staging",
+  //     "group" = "Database Connectivity",
+  //   }
+  // }
 
-  // ======================
-  // Service Grafana
-  // ======================
-  target {
-    name = "ERP_Grafana"
-    address = "https://grafana.kavanix.com/api/health"
-    module  = "http_2xx"
-    labels = {
-      "name" = "ERP | Monitoring Grafana",
-      "job" = "integrations/blackbox",
-      "env" = "Development",
-      "group" = "Internal Ops",
-    }
-  }
+  // // ======================
+  // // Service Grafana
+  // // ======================
+  // target {
+  //   name = "ERP_Grafana"
+  //   address = "https://grafana.kavanix.com/api/health"
+  //   module  = "http_2xx"
+  //   labels = {
+  //     "name" = "ERP | Monitoring Grafana",
+  //     "job" = "integrations/blackbox",
+  //     "env" = "Development",
+  //     "group" = "Internal Ops",
+  //   }
+  // }
 
-  // ======================
-  // Service Semaphore
-  // ======================
-  target {
-    name = "ERP_Semaphore"
-    address = "https://semaphore.kavanix.com"
-    module  = "http_2xx"
-    labels = {
-      "name" = "ERP | Monitoring Semaphore",
-      "job" = "integrations/blackbox",
-      "env" = "Development",
-      "group" = "Internal Ops",
-    }
-  }
+  // // ======================
+  // // Service Semaphore
+  // // ======================
+  // target {
+  //   name = "ERP_Semaphore"
+  //   address = "https://semaphore.kavanix.com"
+  //   module  = "http_2xx"
+  //   labels = {
+  //     "name" = "ERP | Monitoring Semaphore",
+  //     "job" = "integrations/blackbox",
+  //     "env" = "Development",
+  //     "group" = "Internal Ops",
+  //   }
+  // }
 
-  // ======================
-  // Ping IP Control
-  // ======================
-  target {
-    name = "Server_Ping_Control"
-    address = "10.11.1.73"
-    module  = "icmp"
-    labels = {
-      "name" = "ERP | Server Ping Control",
-      "job" = "integrations/blackbox",
-      "env" = "Development",
-      "group" = "Server Connectivity",
-    }
-  }
+  // // ======================
+  // // Ping IP Control
+  // // ======================
+  // target {
+  //   name = "Server_Ping_Control"
+  //   address = "10.11.1.73"
+  //   module  = "icmp"
+  //   labels = {
+  //     "name" = "ERP | Server Ping Control",
+  //     "job" = "integrations/blackbox",
+  //     "env" = "Development",
+  //     "group" = "Server Connectivity",
+  //   }
+  // }
 
-  // ======================
-  // Ping IP App
-  // ======================
-  target {
-    name = "Server_Ping_App"
-    address = "10.21.1.171"
-    module  = "icmp"
-    labels = {
-      "name" = "ERP | Server Ping App",
-      "job" = "integrations/blackbox",
-      "env" = "Development",
-      "group" = "Server Connectivity",
-    }
-  }
+  // // ======================
+  // // Ping IP App
+  // // ======================
+  // target {
+  //   name = "Server_Ping_App"
+  //   address = "10.21.1.171"
+  //   module  = "icmp"
+  //   labels = {
+  //     "name" = "ERP | Server Ping App",
+  //     "job" = "integrations/blackbox",
+  //     "env" = "Development",
+  //     "group" = "Server Connectivity",
+  //   }
+  // }
 
-  // ======================
-  // Ping IP DB
-  // ======================
-  target {
-    name = "Server_Ping_DB"
-    address = "10.31.1.148"
-    module  = "icmp"
-    labels = {
-      "name" = "ERP | Server Ping DB",
-      "job" = "integrations/blackbox",
-      "env" = "Development",
-      "group" = "Server Connectivity",
-    }
-  }
+  // // ======================
+  // // Ping IP DB
+  // // ======================
+  // target {
+  //   name = "Server_Ping_DB"
+  //   address = "10.31.1.148"
+  //   module  = "icmp"
+  //   labels = {
+  //     "name" = "ERP | Server Ping DB",
+  //     "job" = "integrations/blackbox",
+  //     "env" = "Development",
+  //     "group" = "Server Connectivity",
+  //   }
+  // }
 
-  // ======================
-  // Database MySQL db-node
-  // ======================
-  target {
-    name = "Database_MySQL_Prod"
-    address = "10.31.1.148:3306"
-    module  = "tcp_connect"
-    labels = {
-      "name" = "ERP | DB MySQL Prod",
-      "job" = "integrations/blackbox",
-      "env" = "Development",
-      "group" = "Database Connectivity",
-    }
-  }
+  // // ======================
+  // // Database MySQL db-node
+  // // ======================
+  // target {
+  //   name = "Database_MySQL_Prod"
+  //   address = "10.31.1.148:3306"
+  //   module  = "tcp_connect"
+  //   labels = {
+  //     "name" = "ERP | DB MySQL Prod",
+  //     "job" = "integrations/blackbox",
+  //     "env" = "Development",
+  //     "group" = "Database Connectivity",
+  //   }
+  // }
 
-  // ======================
-  // Database PostgreSQL db-node
-  // ======================
-  target {
-    name = "Database_PostgreSQL_Control"
-    address = "127.0.0.1:5432"
-    module  = "postgresql"
-    labels = {
-      "name" = "ERP | DB PGSQL Control",
-      "job" = "integrations/blackbox",
-      "env" = "Development",
-      "group" = "Database Connectivity",
-    }
-  }
+  // // ======================
+  // // Database PostgreSQL db-node
+  // // ======================
+  // target {
+  //   name = "Database_PostgreSQL_Control"
+  //   address = "127.0.0.1:5432"
+  //   module  = "postgresql"
+  //   labels = {
+  //     "name" = "ERP | DB PGSQL Control",
+  //     "job" = "integrations/blackbox",
+  //     "env" = "Development",
+  //     "group" = "Database Connectivity",
+  //   }
+  // }
 
 }
 discovery.relabel "uptime_check_prod" {
